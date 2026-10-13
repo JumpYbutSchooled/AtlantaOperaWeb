@@ -174,8 +174,8 @@ nav a {
   font-size: 0.95rem;
   white-space: nowrap;
 }
-nav a:hover, nav a.current { color: var(--ink); }
-nav a.current::after {
+nav a:hover, nav a.current, .site-header nav a[aria-current="page"] { color: var(--ink); }
+nav a.current::after, .site-header nav a[aria-current="page"]::after {
   content: "";
   position: absolute;
   left: 0;
@@ -186,6 +186,8 @@ nav a.current::after {
 }
 
 .header-tools { display: flex; gap: 0.4rem; }
+.tool.menu-toggle, .icon-close, .menu-open .icon-menu { display: none; }
+.menu-open .icon-close { display: block; }
 .tool {
   display: inline-flex;
   align-items: center;
@@ -978,8 +980,28 @@ dialog[open]::backdrop { animation: fade 0.22s ease-out; }
   .page-body { padding: 2.5rem 0 3.5rem; }
   .footer-nav a { font-size: 0.95rem; }
 }
-@media (max-width: 480px) {
-  .nav-about { display: none; }
+/* the menu folds into a drop-down once the links stop fitting on one line */
+@media (max-width: 900px) {
+  .tool.menu-toggle { display: inline-flex; }
+  #main-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    padding: 0.25rem 20px 0.75rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 12px 24px rgb(0 0 0 / 0.12);
+  }
+  .menu-open #main-nav { display: flex; animation: drop 0.18s ease-out; }
+  @keyframes drop { from { opacity: 0; transform: translateY(-6px); } }
+  #main-nav a { padding: 0.8rem 0; font-size: 1.05rem; border-bottom: 1px solid var(--line); }
+  #main-nav a:last-child { border-bottom: 0; }
+  #main-nav a.current::after, #main-nav a[aria-current="page"]::after { display: none; }
+  #main-nav a.current, #main-nav a[aria-current="page"] { color: var(--accent); }
 }
 
 /* touch screens: no hover lift that sticks after a tap */
@@ -993,7 +1015,7 @@ dialog[open]::backdrop { animation: fade 0.22s ease-out; }
   html { scroll-behavior: auto; }
   .person, .branch-toggle::after { transition: none; }
   .person:hover, .person:focus-visible { transform: none; }
-  dialog[open], dialog:not(.finder)[open], dialog[open]::backdrop, .tree ul.appear > li, .more:not([hidden]) { animation: none; }
+  dialog[open], dialog:not(.finder)[open], dialog[open]::backdrop, .tree ul.appear > li, .more:not([hidden]), .menu-open #main-nav { animation: none; }
 }
 
 /* Printing gives a clean list of whoever is on screen */
