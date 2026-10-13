@@ -143,6 +143,8 @@ nav a:hover { color: var(--accent); }
   transition: background 0.2s, color 0.2s;
 }
 .button:hover { background: var(--gold); color: var(--hero-bg); }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.button-quiet { border-color: rgb(246 238 226 / 0.35); }
 
 /* About */
 .about { padding: 5rem 0; border-bottom: 1px solid var(--line); }
@@ -200,22 +202,82 @@ nav a:hover { color: var(--accent); }
 .result-count { margin: 0; color: var(--muted); font-size: 0.95rem; }
 .empty { color: var(--muted); }
 
-.tree-scroll {
-  overflow-x: auto;
-  padding: 1.5rem 0 1rem;
-  cursor: grab;
+[hidden] { display: none !important; }
+
+/* Family tree / directory switch */
+.view-switch {
+  display: inline-flex;
+  margin-top: 1.5rem;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
 }
-.tree-scroll.dragging { cursor: grabbing; user-select: none; }
+.view-switch button {
+  padding: 0.45rem 1.15rem;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+.view-switch button:hover { color: var(--accent); }
+.view-switch button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.view-switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 0.5rem; }
+.filters button {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.filters button span { color: var(--muted); font-weight: 400; margin-left: 0.2rem; }
+.filters button:hover { border-color: var(--accent); }
+.filters button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* Directory */
+.directory { padding-top: 1rem; }
+.dir-group h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 1.8rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.dir-group h3 span { font: 400 0.95rem var(--body); color: var(--muted); }
+.dir-grid {
+  list-style: none;
+  margin: 0 0 2.5rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.75rem;
+}
+.dir-grid .person { width: 100%; height: 100%; }
+.person-group { font-size: 0.78rem; color: var(--gold); font-weight: 600; line-height: 1.3; margin-top: 0.15rem; }
+
+/* Tree */
+.tree-scroll {
+  container: tree / inline-size;
+  overflow-x: auto;
+  padding: 1.5rem 16px 1rem;
+}
 
 .tree {
-  --gap: 26px;
   --stroke: 2px;
-  display: flex;
-  justify-content: center;
-  min-width: max-content;
-  padding: 0 24px;
+  --elbow: 32px; /* narrow layout: how far down a card its connector meets it */
+  --cy: 30px; /* wide layout: the same, measured from the card's top */
+  --col: 34px; /* wide layout: room for connectors between columns */
+  max-width: 720px;
+  margin: 0 auto;
 }
-.tree ul { list-style: none; margin: 0; padding: 0; }
+.tree ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .tree li { position: relative; }
 
 /* Nodes */
@@ -224,30 +286,29 @@ nav a:hover { color: var(--accent); }
 .root-node {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 1rem 2rem;
+  justify-content: center;
+  padding: 0.9rem 1.1rem;
   background: var(--hero-bg);
   color: var(--hero-ink);
   border: 1px solid var(--gold);
   box-shadow: var(--shadow);
-  text-align: center;
 }
-.root-title { font-family: var(--display); font-size: 1.9rem; font-weight: 700; line-height: 1.1; }
+.root-title { font-family: var(--display); font-size: 1.6rem; font-weight: 700; line-height: 1.1; }
 .root-sub { font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-top: 0.3rem; }
 
 .branch-node {
   display: flex;
-  align-items: stretch;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
   box-shadow: var(--shadow);
 }
 .branch-toggle {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 150px;
   padding: 0.55rem 2.2rem 0.55rem 0.9rem;
   border: 0;
   background: none;
@@ -269,7 +330,7 @@ nav a:hover { color: var(--accent); }
 }
 .is-open .branch-toggle::after { transform: translateY(-30%) rotate(-135deg); }
 .branch-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 10px; }
-.branch-label { font-family: var(--display); font-weight: 700; font-size: 1.2rem; line-height: 1.15; white-space: nowrap; }
+.branch-label { font-family: var(--display); font-weight: 700; font-size: 1.2rem; line-height: 1.15; }
 .branch-count { font-size: 0.8rem; color: var(--muted); }
 .branch-node:hover { border-color: var(--accent); }
 .branch-node.is-open { border-color: var(--accent); }
@@ -283,14 +344,15 @@ nav a:hover { color: var(--accent); }
 .depth-1.is-open .branch-info { color: var(--accent-ink); border-color: rgb(255 255 255 / 0.4); }
 
 .branch-info {
-  align-self: center;
-  margin-right: 0.6rem;
-  padding: 0.15rem 0.55rem;
+  position: absolute;
+  right: 2rem;
+  bottom: 0.55rem;
+  padding: 0.05rem 0.5rem;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: none;
   color: var(--accent);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -300,7 +362,7 @@ nav a:hover { color: var(--accent); }
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  width: 230px;
+  width: 100%;
   padding: 0.5rem 0.75rem 0.5rem 0.5rem;
   border: 1px solid var(--line);
   border-radius: 999px 14px 14px 999px;
@@ -343,101 +405,97 @@ nav a:hover { color: var(--accent); }
 
 mark { background: var(--hit); color: inherit; padding: 0 0.1em; }
 
-/* Connectors — wide screens: a top-down family tree */
-@media (min-width: 721px) {
-  .tree ul { display: flex; justify-content: center; position: relative; padding-top: var(--gap); }
-  .tree > ul { padding-top: 0; }
-  .tree li { display: flex; flex-direction: column; align-items: center; padding: var(--gap) 8px 0; }
-  .tree > ul > li { padding-top: 0; }
+/* Connectors — narrow screens: an indented tree that reads top to bottom */
+.tree ul ul { padding-left: 22px; }
+.tree li { padding-top: 10px; }
+.tree > ul > li { padding-top: 0; }
+.tree ul ul > li::before {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: 0;
+  bottom: 0;
+  border-left: var(--stroke) solid var(--branch);
+}
+.tree ul ul > li:last-child::before {
+  bottom: auto;
+  width: 13px;
+  height: var(--elbow);
+  border-bottom: var(--stroke) solid var(--branch);
+  border-bottom-left-radius: 10px;
+}
+.tree ul ul > li::after {
+  content: "";
+  position: absolute;
+  left: -13px;
+  top: var(--elbow);
+  width: 13px;
+  border-top: var(--stroke) solid var(--branch);
+}
+.tree ul ul > li:last-child::after { display: none; }
 
-  /* line down from a parent to its children's bar */
+/* Connectors — wide screens: a family tree that grows to the right, one column per generation.
+   Every column fits on screen, so the tree only ever scrolls down. */
+@container tree (min-width: 1070px) {
+  .tree { max-width: 1080px; }
+  .tree li { display: flex; align-items: flex-start; }
+
+  .tree ul ul { position: relative; padding-left: var(--col); }
   .tree ul ul::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: calc(50% - var(--stroke) / 2);
-    height: var(--gap);
-    border-left: var(--stroke) solid var(--branch);
-  }
-
-  /* the horizontal bar, and the drop into each child */
-  .tree ul ul > li::before,
-  .tree ul ul > li::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 50%;
-    width: 50%;
-    height: var(--gap);
+    left: 0;
+    top: var(--cy);
+    width: calc(var(--col) / 2);
     border-top: var(--stroke) solid var(--branch);
   }
-  .tree ul ul > li::after {
-    right: auto;
-    left: calc(50% - var(--stroke) / 2);
-    border-left: var(--stroke) solid var(--branch);
-  }
-  .tree ul ul > li:first-child::before,
-  .tree ul ul > li:last-child::after { border: 0; }
-  .tree ul ul > li:last-child::before {
-    border-right: var(--stroke) solid var(--branch);
-    border-radius: 0 12px 0 0;
-    right: calc(50% - var(--stroke) / 2);
-  }
-  .tree ul ul > li:first-child::after { border-radius: 12px 0 0 0; }
-  .tree ul ul > li:only-child::before { display: none; }
-  .tree ul ul > li:only-child::after { border-top: 0; border-radius: 0; }
 
-  /* people hang from their branch in a single column */
-  .tree ul.stack { flex-direction: column; align-items: center; }
-  .tree ul.stack > li { padding: 12px 0 0; }
-  .tree ul.stack > li::before { display: none; }
-  .tree ul.stack > li::after,
-  .tree ul.stack > li:first-child::after,
-  .tree ul.stack > li:last-child::after {
-    left: calc(50% - var(--stroke) / 2);
+  .tree ul ul > li { --pt: 10px; padding: var(--pt) 0 0 calc(var(--col) / 2); }
+  .tree ul ul > li:first-child { --pt: 0px; }
+
+  /* the vertical line joining brothers and sisters */
+  .tree ul ul > li::before,
+  .tree ul ul > li:last-child::before {
+    left: 0;
+    top: 0;
+    bottom: 0;
     width: 0;
-    height: 12px;
+    height: auto;
     border: 0;
     border-left: var(--stroke) solid var(--branch);
     border-radius: 0;
   }
-}
-
-/* Connectors — phones: an indented tree that reads top to bottom */
-@media (max-width: 720px) {
-  .tree-scroll { padding: 1rem 16px; cursor: auto; }
-  .tree { --elbow: 32px; display: block; min-width: 0; padding: 0; }
-  .tree ul { display: flex; flex-direction: column; padding-left: 22px; }
-  .tree > ul { padding-left: 0; }
-  .tree li { padding-top: 10px; }
-  .tree > ul > li { padding-top: 0; }
-  .tree ul ul > li::before {
-    content: "";
-    position: absolute;
-    left: -13px;
-    top: 0;
-    bottom: 0;
-    border-left: var(--stroke) solid var(--branch);
+  .tree ul ul > li:first-child::before { top: var(--cy); }
+  .tree ul ul > li:last-child::before {
+    bottom: auto;
+    width: calc(var(--col) / 2);
+    height: calc(var(--pt) + var(--cy));
+    border-bottom: var(--stroke) solid var(--branch);
+    border-bottom-left-radius: 10px;
   }
-  .tree ul ul > li:last-child::before { bottom: auto; height: var(--elbow); border-bottom-left-radius: 10px; }
+
+  /* the line into each card */
   .tree ul ul > li::after {
-    content: "";
-    position: absolute;
-    left: -13px;
-    top: var(--elbow);
-    width: 13px;
-    border-top: var(--stroke) solid var(--branch);
+    left: 0;
+    top: calc(var(--pt) + var(--cy));
+    width: calc(var(--col) / 2);
   }
-  .tree ul ul > li:last-child::after { display: none; }
-  .tree ul ul > li:last-child::before { width: 13px; border-bottom: var(--stroke) solid var(--branch); }
 
-  .root-node { align-items: flex-start; text-align: left; padding: 0.9rem 1.1rem; }
-  .root-title { font-size: 1.6rem; }
-  .branch-node { width: 100%; }
-  .branch-toggle { flex: 1; min-width: 0; }
-  .branch-label { white-space: normal; }
-  .person { width: 100%; }
+  /* an only child sits level with its parent: one straight line */
+  .tree ul ul > li:only-child::before { display: none; }
+  .tree ul ul > li:only-child::after { display: block; }
+
+  .root-node { flex: none; width: 150px; min-height: 60px; padding: 0.5rem 0.9rem; }
+  .root-title { font-size: 1.35rem; }
+  .root-sub { display: none; }
+  .branch-node { flex: none; width: 180px; min-height: 60px; }
+  .person { flex: none; width: 236px; min-height: 60px; }
+
+  /* arrows point the way the tree grows */
+  .branch-toggle::after { transform: translateY(-50%) rotate(-45deg); }
+  .is-open .branch-toggle::after { transform: translateY(-50%) rotate(135deg); }
 }
+
 
 /* Dialog */
 dialog {
@@ -513,10 +571,14 @@ dialog::backdrop { background: rgb(20 10 12 / 0.6); backdrop-filter: blur(2px); 
   .dialog-portrait { aspect-ratio: 4 / 3; }
   .dialog-info { padding: 1.75rem 1.5rem; }
   .dialog-info h2 { font-size: 2rem; }
-  nav { gap: 1rem; }
+  nav { gap: 0.8rem; }
+  nav a { font-size: 0.85rem; white-space: nowrap; }
+  .brand { font-size: 1.1rem; white-space: nowrap; }
+  .header-inner { gap: 0.75rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .person, .branch-toggle::after { transition: none; }
+  .person:hover, .person:focus-visible { transform: none; }
 }

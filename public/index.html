@@ -17,7 +17,8 @@
       <a class="brand" href="#top">The Atlanta Opera</a>
       <nav aria-label="Main">
         <a href="#about">About</a>
-        <a href="#family-tree">Family Tree</a>
+        <a href="#family-tree" data-show-view="tree">Family Tree</a>
+        <a href="#family-tree" data-show-view="directory">Directory</a>
       </nav>
     </div>
   </header>
@@ -32,7 +33,10 @@
           experiences for audiences everywhere. Meet the leadership, board, orchestra, chorus, and
           studio artists who make it happen.
         </p>
-        <a class="button" href="#family-tree">Explore the family tree</a>
+        <div class="hero-actions">
+          <a class="button" href="#family-tree" data-show-view="tree">Explore the family tree</a>
+          <a class="button button-quiet" href="#family-tree" data-show-view="directory">See everyone A–Z</a>
+        </div>
       </div>
     </section>
 
@@ -152,23 +156,32 @@
     <section id="family-tree" class="people">
       <div class="wrap">
         <h2>The Family Tree</h2>
-        <p class="section-intro">Open a branch to see who’s in it. Select anyone to read their profile.</p>
+        <p class="section-intro">
+          Open a branch to see who’s in it, or switch to the directory to see everyone at once.
+          Select anyone to read their profile.
+        </p>
+        <div class="view-switch" role="group" aria-label="View">
+          <button type="button" data-view="tree" aria-pressed="true">Family tree</button>
+          <button type="button" data-view="directory" aria-pressed="false">Directory A–Z</button>
+        </div>
         <div class="controls">
           <label class="search">
             <span class="visually-hidden">Search by name or role</span>
             <input id="search" type="search" placeholder="Search by name or role" autocomplete="off">
           </label>
-          <div class="tree-actions">
+          <div class="tree-actions" id="tree-actions">
             <button type="button" id="expand-all">Expand all</button>
             <button type="button" id="collapse-all">Collapse all</button>
           </div>
           <p id="result-count" class="result-count" aria-live="polite"></p>
         </div>
+        <div class="filters" id="filters" role="group" aria-label="Show department" hidden></div>
       </div>
       <div class="tree-scroll" id="tree-scroll">
         <div id="tree" class="tree"></div>
       </div>
       <div class="wrap">
+        <div id="directory" class="directory" hidden></div>
         <p id="empty" class="empty" hidden>No one matches that search.</p>
       </div>
     </section>

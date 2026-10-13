@@ -4,6 +4,9 @@
 
   const treeEl = document.getElementById("tree");
   const scroller = document.getElementById("tree-scroll");
+  const treeActions = document.getElementById("tree-actions");
+  const dirEl = document.getElementById("directory");
+  const filtersEl = document.getElementById("filters");
   const search = document.getElementById("search");
   const resultCount = document.getElementById("result-count");
   const empty = document.getElementById("empty");
@@ -53,6 +56,31 @@
   // ── State ──
   let open = new Set([TREE.key]);
   let query = "";
+  let view = "tree"; // or "directory"
+  let dept = "all"; // directory filter: "all" or a department's branch key
+  try {
+    if (localStorage.getItem("view") === "directory") view = "directory";
+  } catch {}
+
+  function setView(v) {
+    view = v;
+    try {
+      localStorage.setItem("view", v);
+    } catch {}
+    update();
+  }
+
+  // Show the current view and draw it.
+  function update() {
+    const isTree = view === "tree";
+    document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === view));
+    scroller.hidden = !isTree;
+    treeActions.hidden = !isTree;
+    filtersEl.hidden = isTree;
+    dirEl.hidden = isTree;
+    if (isTree) render();
+    else renderDirectory();
+  }
 
   // Opening a branch closes its siblings that have branches of their own, so the tree stays readable.
   function toggle(key) {
@@ -80,7 +108,8 @@
     open = new Set();
     for (let b = place.branch; b; b = b.parent) open.add(b.key);
     if (query) search.value = query = "";
-    render();
+    if (view === "tree") render();
+    else setView("tree");
     const card = treeEl.querySelector(`.person[data-id="${CSS.escape(id)}"]`);
     if (card) card.scrollIntoView({ block: "nearest", inline: "center" });
   }
@@ -154,6 +183,87 @@
       resultCount.textContent = "";
       empty.hidden = true;
     }
+  }
+
+  // ── Directory: everyone at once, by department, A–Z by surname ──
+  const depts = TREE.kids.filter((k) => k.label);
+
+  const surname = (name) => {
+    const words = name.replace(/,|\b(Dr\.|Jr\.|Sr\.|II|III|IV)(?=\s|$)/g, "").trim().split(/\s+/);
+    return words[words.length - 1];
+  };
+  const byName = (a, b) =>
+    surname(a.p.name).localeCompare(surname(b.p.name), undefined, { sensitivity: "base" }) ||
+    a.p.name.localeCompare(b.p.name);
+
+  // "Past Studio Artists › 2025-26, 2024-25 · Resident Artist"
+  const describeGroups = (paths) => {
+    const byPrefix = new Map();
+    for (const path of paths) {
+      if (!path.length) continue;
+      const prefix = path.slice(0, -1).join(" › ");
+      if (!byPrefix.has(prefix)) byPrefix.set(prefix, []);
+      byPrefix.get(prefix).push(path[path.length - 1]);
+    }
+    return [...byPrefix].map(([prefix, lasts]) => (prefix ? `${prefix} › ` : "") + lasts.join(", ")).join(" · ");
+  };
+
+  const isUnder = (branch, dept) => {
+    for (let b = branch; b; b = b.parent) if (b === dept) return true;
+    return false;
+  };
+
+  const directory = depts.map((d) => ({
+    dept: d,
+    list: [...d.ids]
+      .map((id) => {
+        const p = PEOPLE[id];
+        const mine = places[id].filter((w) => isUnder(w.branch, d));
+        const role = mine.length === 1 ? mine[0].role : p.role;
+        let group = describeGroups(mine.map((w) => pathOf(w.branch).slice(1)));
+        const plain = (s) => s.toLowerCase().replace(/s$/, "");
+        if (plain(group) === plain(role)) group = ""; // "Honorary Member" in "Honorary Members"
+        return { id, p, role, group, text: `${p.name} ${p.role} ${role} ${group}`.toLowerCase() };
+      })
+      .sort(byName),
+  }));
+
+  function renderDirectory() {
+    filtersEl.innerHTML = [["all", "Everyone", TREE.ids.size], ...depts.map((d) => [d.key, d.label, d.ids.size])]
+      .map(
+        ([key, label, n]) =>
+          `<button type="button" data-dept="${key}" aria-pressed="${key === dept}">${escape(label)}<span>${n}</span></button>`
+      )
+      .join("");
+
+    const groups = directory
+      .filter((g) => dept === "all" || g.dept.key === dept)
+      .map((g) => ({ ...g, list: query ? g.list.filter((x) => x.text.includes(query)) : g.list }))
+      .filter((g) => g.list.length);
+
+    dirEl.innerHTML = groups
+      .map(
+        (g) => `<section class="dir-group" aria-label="${escape(g.dept.label)}">
+          <h3>${escape(g.dept.label)}<span>${plural(g.list.length)}</span></h3>
+          <ul class="dir-grid">${g.list
+            .map(
+              (x) => `<li><button type="button" class="person" data-id="${escape(x.id)}">
+                ${avatar(x.p)}
+                <span class="person-text">
+                  <span class="person-name">${escape(x.p.name)}</span>
+                  <span class="person-role">${escape(x.role)}</span>
+                  ${x.group ? `<span class="person-group">${escape(x.group)}</span>` : ""}
+                </span>
+              </button></li>`
+            )
+            .join("")}</ul>
+        </section>`
+      )
+      .join("");
+
+    const n = new Set(groups.flatMap((g) => g.list.map((x) => x.id))).size;
+    resultCount.textContent = query ? `${n} ${n === 1 ? "match" : "matches"}` : plural(n);
+    empty.hidden = n > 0;
   }
 
   function focusBranch(key) {
@@ -260,9 +370,30 @@
     if (location.hash) history.replaceState(null, "", location.pathname + location.search);
   });
 
+  dirEl.addEventListener("click", (e) => {
+    const t = e.target.closest(".person");
+    if (t) openPerson(t.dataset.id);
+  });
+
+  filtersEl.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-dept]");
+    if (!t) return;
+    dept = t.dataset.dept;
+    renderDirectory();
+  });
+
+  document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
+
+  // Header and hero links that jump to a particular view.
+  document.querySelectorAll("[data-show-view]").forEach((a) =>
+    a.addEventListener("click", () => {
+      if (view !== a.dataset.showView) setView(a.dataset.showView);
+    })
+  );
+
   search.addEventListener("input", () => {
     query = search.value.trim().toLowerCase();
-    render();
+    update();
   });
 
   document.getElementById("expand-all").addEventListener("click", () => {
@@ -272,21 +403,6 @@
   document.getElementById("collapse-all").addEventListener("click", () => {
     open = new Set([TREE.key]);
     render();
-  });
-
-  // Drag the tree sideways with the mouse when it's wider than the screen.
-  let drag = null;
-  scroller.addEventListener("pointerdown", (e) => {
-    if (e.pointerType !== "mouse" || e.target.closest("button, a, input")) return;
-    drag = { x: e.clientX, left: scroller.scrollLeft };
-    scroller.classList.add("dragging");
-  });
-  window.addEventListener("pointermove", (e) => {
-    if (drag) scroller.scrollLeft = drag.left - (e.clientX - drag.x);
-  });
-  window.addEventListener("pointerup", () => {
-    drag = null;
-    scroller.classList.remove("dragging");
   });
 
   // Links like yoursite.com/#person-id open that person directly.
@@ -300,6 +416,7 @@
   window.addEventListener("hashchange", openFromHash);
 
   document.getElementById("year").textContent = new Date().getFullYear();
-  render();
+  query = search.value.trim().toLowerCase(); // browsers can restore the box's text on Back
+  update();
   openFromHash();
 })();
