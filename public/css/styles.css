@@ -78,6 +78,20 @@
 
 ::selection { background: var(--accent); color: var(--accent-ink); }
 
+/* Scrollbars in the site's gold, on the page background */
+* { scrollbar-width: thin; scrollbar-color: var(--branch) transparent; }
+html { scrollbar-color: var(--branch) var(--bg); }
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  html::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--branch); border: 2px solid transparent; border-radius: 999px; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background-color: var(--gold); }
+}
+
+html { -webkit-text-size-adjust: 100%; }
+button, a { -webkit-tap-highlight-color: transparent; }
+
 * { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; scroll-padding-top: 72px; }
@@ -370,13 +384,18 @@ kbd {
 
 /* Everyone list */
 .directory { padding-top: 1rem; }
+/* department headings stay pinned under the header while you scroll their list */
 .dir-group h3 {
+  position: sticky;
+  top: 60px;
+  z-index: 2;
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
   font-size: 1.8rem;
-  padding-bottom: 0.4rem;
+  padding: 0.5rem 0 0.4rem;
   border-bottom: 1px solid var(--line);
+  background: var(--bg);
 }
 .dir-group h3 span { font: 400 0.95rem var(--body); color: var(--muted); }
 .dir-grid {
@@ -858,18 +877,71 @@ dialog[open]::backdrop { animation: fade 0.22s ease-out; }
   .brand { font-size: 1.1rem; }
   .header-inner { gap: 0.75rem; }
   .tool .tool-label, .tool kbd { display: none; }
+  .tool { width: 40px; height: 40px; }
   .finder { margin-top: 12px; }
+  .finder-results { max-height: 60vh; }
   .finder-foot { display: none; }
+
+  /* less empty space between sections */
+  .hero { min-height: 480px; padding: 3rem 0; }
+  .hero-photo { background-position: 60% top; }
+  .about { padding: 3rem 0; }
+  .about h2 { font-size: 2.2rem; margin: 0; }
+  .people { padding: 3rem 0 4rem; }
+  .people h2 { font-size: 2.2rem; }
+
+  /* view switch and Open all share a row, search gets the full width below */
+  .controls { gap: 0.75rem; margin-top: 1.25rem; }
+  .search { flex: 1 1 100%; max-width: none; order: 3; }
+  .result-count { order: 4; }
+  .view-switch button { padding: 0.5rem 1rem; }
+
+  /* department filters scroll sideways instead of wrapping */
+  .filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: 0 -20px 0.5rem;
+    padding: 0 20px 6px;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filters button { flex: none; padding: 0.5rem 0.95rem; }
+
+  .dir-group h3 { font-size: 1.55rem; }
+  .dir-grid { grid-template-columns: 1fr; gap: 0.6rem; }
+
+  /* profiles open as a sheet that slides up from the bottom */
+  dialog:not(.finder) {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 40px);
+    margin: auto 0 0;
+    border-radius: 16px 16px 0 0;
+  }
+  dialog:not(.finder)[open] { animation: sheet 0.28s ease-out; }
+  @keyframes sheet { from { transform: translateY(40px); opacity: 0; } }
+  .dialog-portrait { aspect-ratio: 1 / 1; max-height: 46vh; width: 100%; }
+  .dialog-nav { padding-bottom: calc(0.6rem + env(safe-area-inset-bottom)); }
+  .dialog-actions { gap: 0.75rem 1.25rem; }
+
+  .to-top { right: 14px; bottom: calc(14px + env(safe-area-inset-bottom)); width: 42px; height: 42px; }
 }
 @media (max-width: 480px) {
   .nav-about { display: none; }
+}
+
+/* touch screens: no hover lift that sticks after a tap */
+@media (hover: none) {
+  .person:hover { transform: none; box-shadow: none; border-color: var(--line); }
+  .branch-node:not(.is-open):hover { border-color: var(--line); }
+  .depth-1:not(.is-open):hover { border-color: var(--gold); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .person, .branch-toggle::after { transition: none; }
   .person:hover, .person:focus-visible { transform: none; }
-  dialog[open], dialog[open]::backdrop, .tree ul.appear > li { animation: none; }
+  dialog[open], dialog:not(.finder)[open], dialog[open]::backdrop, .tree ul.appear > li, .more:not([hidden]) { animation: none; }
 }
 
 /* Printing gives a clean list of whoever is on screen */
