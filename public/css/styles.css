@@ -865,6 +865,54 @@ dialog[open]::backdrop { animation: fade 0.22s ease-out; }
 }
 .site-footer p { margin: 0 0 0.25rem; opacity: 0.85; }
 .site-footer .small { font-size: 0.85rem; opacity: 0.6; }
+.footer-nav { flex-wrap: wrap; gap: 0.6rem 1.75rem; margin-bottom: 1.25rem; }
+.footer-nav a { color: var(--hero-ink); opacity: 0.8; }
+.footer-nav a:hover, .footer-nav a[aria-current] { color: var(--hero-ink); opacity: 1; }
+.footer-nav a[aria-current] { text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 6px; }
+
+/* Smaller pages (Season, Education, Get Involved) */
+.page-hero {
+  background: var(--hero-bg);
+  color: var(--hero-ink);
+  padding: 5rem 0 4rem;
+}
+.page-hero h1 { font-size: clamp(2.4rem, 6vw, 4rem); }
+.page-hero .lede { margin: 0; }
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.page-body { padding: 4rem 0 5rem; }
+.placeholder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem 1.5rem;
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.placeholder h2 { font-size: 1.7rem; }
+.placeholder p { margin: 0 0 1.25rem; color: var(--muted); }
+.soon {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.page-back { margin: 2.5rem 0 0; }
 
 @media (max-width: 720px) {
   .about-inner { grid-template-columns: 1fr; gap: 0.5rem; }
@@ -925,6 +973,10 @@ dialog[open]::backdrop { animation: fade 0.22s ease-out; }
   .dialog-actions { gap: 0.75rem 1.25rem; }
 
   .to-top { right: 14px; bottom: calc(14px + env(safe-area-inset-bottom)); width: 42px; height: 42px; }
+
+  .page-hero { padding: 3.5rem 0 3rem; }
+  .page-body { padding: 2.5rem 0 3.5rem; }
+  .footer-nav a { font-size: 0.95rem; }
 }
 @media (max-width: 480px) {
   .nav-about { display: none; }

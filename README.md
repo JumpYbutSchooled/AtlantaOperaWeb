@@ -12,6 +12,7 @@ Names, photos and bios come from the People pages on atlantaopera.org.
 - `public/js/app.js`: draws the tree, the Everyone list and the profiles
 - `public/css/styles.css`: styles
 - `public/images/people/`: headshots
+- `public/season.html`, `public/education.html`, `public/get-involved.html`: placeholder pages, ready to fill in. Replace each "Coming soon" box with the real text. They're linked from the footer on every page.
 
 To add a photo, put it in `public/images/people/` and set `photo: "images/people/their-name.jpg"`. Anyone without a photo gets their initials.
 
