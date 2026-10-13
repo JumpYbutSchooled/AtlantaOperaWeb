@@ -1,16 +1,17 @@
 # Atlanta Opera Info Site
 
-A static site listing everyone in the company, hosted on Firebase Hosting. Everything served is in `public/`.
+A static site showing everyone in The Atlanta Opera as a family tree, hosted on Firebase Hosting. Everything served is in `public/`. The people and text come from atlantaopera.org (the Leadership, Orchestra, Chorus, Studio Artists and Company pages).
 
 ## Editing people
 
-All people live in `public/js/people.js`, one entry each. The comment at the top of that file explains the fields.
+Everything lives in `public/js/people.js`. The comment at the top of that file explains the fields.
 
-- **Photos:** put images in `public/images/people/` and set `photo: "images/people/their-name.jpg"`. Portrait-shaped (4:5) images look best. If `photo` is empty or the file is missing, a placeholder silhouette is shown.
-- **Sections:** the `GROUPS` list at the top of `people.js` sets the section names and order.
-- **Linking to a person:** `https://your-site.web.app/#their-id` opens their bio directly.
+- **`PEOPLE`** has one entry per person: name, role, photo, website link, extra details, and bio.
+- **`TREE`** arranges them. Each branch has a `label`, optional `note` and `photo` (shown under the branch's "About" button), and `children`: more branches, person ids, or `{ id, role }` when a card should show a different role in that spot.
+- **Photos:** put images in `public/images/people/` and set `photo: "images/people/their-name.jpg"`. If `photo` is empty or the file is missing, their initials are shown.
+- **Linking to a person:** `https://atlantaoperainfo.web.app/#their-id` opens their profile and shows them in the tree.
 
-Page text (intro, About, footer) is in `public/index.html`; search for "Placeholder".
+The page text (intro, About, footer) is in `public/index.html`.
 
 ## Preview locally
 
@@ -21,15 +22,6 @@ firebase emulators:start --only hosting
 ```
 
 ## Deploy
-
-First time only:
-
-```
-firebase login
-firebase use --add      # pick your Firebase project
-```
-
-Then whenever you want to publish:
 
 ```
 firebase deploy --only hosting
