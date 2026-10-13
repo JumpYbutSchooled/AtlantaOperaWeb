@@ -165,8 +165,31 @@
     let depth = 0;
     for (let b = node; b.parent; b = b.parent) depth++;
     const kids = node.kids.map((k) => (k.label ? branchHtml(k, depth + 1) : personHtml(k))).join("");
-    if (kids) li.insertAdjacentHTML("beforeend", `<ul class="appear">${kids}</ul>`);
     setOpenLook(key, true);
+    if (!kids) return;
+    li.insertAdjacentHTML("beforeend", `<ul class="appear">${kids}</ul>`);
+    if (!calm()) slide(li.lastElementChild, false);
+  }
+
+  // Grows or shrinks a list's height so the groups below glide instead of jumping.
+  const FOLD_MS = 260;
+  function slide(ul, closing) {
+    const li = ul.parentElement;
+    const h = ul.offsetHeight;
+    // On wide screens the list sits beside its group's box, so the row can only
+    // shrink to the box's height; stop there so the whole animation is movement.
+    ul.style.display = "none";
+    const bare = li.offsetHeight;
+    ul.style.display = "";
+    const floor = Math.min(h, Math.max(0, bare - ul.offsetTop));
+    ul.style.overflow = "hidden";
+    const frames = [{ height: `${h}px` }, { height: `${floor}px` }];
+    const run = ul.animate(closing ? frames : frames.reverse(), {
+      duration: FOLD_MS,
+      easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+      fill: closing ? "forwards" : "none",
+    });
+    if (!closing) run.onfinish = () => (ul.style.overflow = "");
   }
 
   // Plays the opening slide in reverse, then takes the list away.
@@ -180,11 +203,12 @@
     }
     ul.classList.remove("appear");
     ul.classList.add("vanish");
+    slide(ul, true);
     return new Promise((done) =>
       setTimeout(() => {
         ul.remove();
         done();
-      }, 260)
+      }, FOLD_MS)
     );
   }
 
