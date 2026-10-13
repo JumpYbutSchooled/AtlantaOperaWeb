@@ -276,7 +276,7 @@ kbd {
 
 
 /* About */
-.about { padding: 5rem 0; border-bottom: 1px solid var(--line); }
+.about { padding: 5rem 0; }
 .about-inner {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -311,7 +311,7 @@ kbd {
 .more:not([hidden]) { animation: fade 0.25s ease-out; }
 
 /* Tree section */
-.people { padding: 5rem 0 6rem; }
+.people { padding: 5rem 0 6rem; border-bottom: 1px solid var(--line); }
 .people h2 { font-size: 2.5rem; }
 .section-intro { color: var(--muted); margin: 0; }
 
