@@ -457,17 +457,6 @@
     })
   );
 
-  // "Go straight to" links in the header area.
-  const jump = $("jump");
-  jump.innerHTML =
-    "Go straight to: " +
-    depts.map((d) => `<a href="#family-tree" data-jump="${d.key}">${escape(d.label)}</a>`).join("");
-  jump.hidden = false;
-  jump.addEventListener("click", (e) => {
-    const a = e.target.closest("[data-jump]");
-    if (a) openGroup(a.dataset.jump);
-  });
-
   search.addEventListener("input", () => {
     query = fold(search.value.trim());
     update();

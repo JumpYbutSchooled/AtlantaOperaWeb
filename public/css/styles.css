@@ -151,8 +151,6 @@ nav a:hover { color: var(--accent); }
 .button-quiet { background: transparent; border-color: rgb(246 238 226 / 0.55); color: var(--hero-ink); }
 .button-quiet:hover { background: rgb(246 238 226 / 0.12); filter: none; }
 
-.jump { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; margin: 1.75rem 0 0; font-size: 0.95rem; opacity: 0.9; }.jump a { color: var(--hero-ink); text-underline-offset: 3px; }
-.jump a:hover { color: var(--gold); }
 
 /* About */
 .about { padding: 5rem 0; border-bottom: 1px solid var(--line); }
