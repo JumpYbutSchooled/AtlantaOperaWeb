@@ -388,7 +388,7 @@
         <p class="dialog-actions">
           ${link}
           <button type="button" data-share="${escape(id)}">${canShare ? icons.share + "Share" : icons.link + "Copy link"}</button>
-          <button type="button" data-reveal="${escape(id)}">${icons.tree}Show in the family tree</button>
+          <button type="button" data-reveal="${escape(id)}">${icons.tree}Show in the tree</button>
         </p>
       </div>`;
     remember(id);

@@ -1,6 +1,6 @@
 # Meet the People of The Atlanta Opera
 
-Who's who at The Atlanta Opera (leadership, board, orchestra, chorus and studio artists), shown as a family tree or as one list.
+Who's who at The Atlanta Opera (leadership, board, orchestra, chorus and studio artists), shown as a tree or as one list.
 Live at https://atlantaoperainfo.web.app
 
 Names, photos and bios come from the People pages on atlantaopera.org.
