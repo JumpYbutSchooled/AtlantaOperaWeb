@@ -110,19 +110,86 @@
   }
 
   // Opening a group closes the other groups beside it, so the tree stays short.
+  // Only the groups that change are redrawn, so photos already on screen stay put.
   function toggle(key) {
     const node = branches.get(key);
+    if (query) {
+      if (open.has(key)) closeDown(node);
+      else open.add(key);
+      render();
+      focusBranch(key);
+      return;
+    }
     if (open.has(key)) {
       closeDown(node);
-    } else {
-      if (node.parent && !node.isStack) {
-        for (const sib of node.parent.kids) if (sib.label && sib !== node && !sib.isStack) closeDown(sib);
-      }
-      open.add(key);
-      justOpened = key;
+      collapse(key);
+      syncOpenAll();
+      focusBranch(key);
+      return;
     }
-    render();
-    focusBranch(key);
+    const closing = [];
+    if (node.parent && !node.isStack) {
+      for (const sib of node.parent.kids) {
+        if (!sib.label || sib === node || sib.isStack) continue;
+        if (open.has(sib.key)) closing.push(collapse(sib.key));
+        closeDown(sib);
+      }
+    }
+    open.add(key);
+    setOpenLook(key, true);
+    syncOpenAll();
+    // let the neighbours fold away first, then slide this group in
+    Promise.all(closing).then(() => {
+      if (!open.has(key)) return;
+      expand(key);
+      focusBranch(key);
+    });
+  }
+
+  const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const boxOf = (key) => treeEl.querySelector(`.branch-node[data-key="${key}"]`);
+
+  function setOpenLook(key, isOpen) {
+    const box = boxOf(key);
+    if (!box) return;
+    box.classList.toggle("is-open", isOpen);
+    box.querySelector(".branch-toggle").setAttribute("aria-expanded", isOpen);
+  }
+
+  function expand(key) {
+    const box = boxOf(key);
+    if (!box) return;
+    const li = box.parentElement;
+    li.querySelectorAll(":scope > ul").forEach((ul) => ul.remove());
+    const node = branches.get(key);
+    let depth = 0;
+    for (let b = node; b.parent; b = b.parent) depth++;
+    const kids = node.kids.map((k) => (k.label ? branchHtml(k, depth + 1) : personHtml(k))).join("");
+    if (kids) li.insertAdjacentHTML("beforeend", `<ul class="appear">${kids}</ul>`);
+    setOpenLook(key, true);
+  }
+
+  // Plays the opening slide in reverse, then takes the list away.
+  function collapse(key) {
+    setOpenLook(key, false);
+    const ul = boxOf(key)?.parentElement.querySelector(":scope > ul:not(.vanish)");
+    if (!ul) return Promise.resolve();
+    if (calm()) {
+      ul.remove();
+      return Promise.resolve();
+    }
+    ul.classList.remove("appear");
+    ul.classList.add("vanish");
+    return new Promise((done) =>
+      setTimeout(() => {
+        ul.remove();
+        done();
+      }, 260)
+    );
+  }
+
+  function syncOpenAll() {
+    openAll.textContent = open.size > 1 ? "Close all" : "Open all";
   }
 
   function closeDown(node) {
@@ -203,15 +270,12 @@
           </button>${info}
         </div>`;
     }
-    const list = kids ? `<ul${node.key === justOpened ? ' class="appear"' : ""}>${kids}</ul>` : "";
+    const list = kids ? `<ul>${kids}</ul>` : "";
     return `<li class="branch">${box}${list}</li>`;
   }
 
-  let justOpened = null; // the group to animate on the next draw
-
   function render() {
     treeEl.innerHTML = `<ul>${branchHtml(TREE, 0)}</ul>`;
-    justOpened = null;
     if (query) {
       const n = new Set([...treeEl.querySelectorAll(".person.hit")].map((b) => b.dataset.id)).size;
       resultCount.textContent = n ? found(n) : "";
@@ -221,7 +285,7 @@
       empty.hidden = true;
     }
     openAll.hidden = Boolean(query); // a search already opens every group with a match
-    openAll.textContent = open.size > 1 ? "Close all" : "Open all";
+    syncOpenAll();
   }
 
   function focusBranch(key) {

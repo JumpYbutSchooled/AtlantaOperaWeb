@@ -784,6 +784,15 @@ dialog[open]::backdrop { animation: fade 0.22s ease-out; }
 .tree ul.appear > li:nth-child(n + 5) { animation-delay: 0.12s; }
 @keyframes grow { from { opacity: 0; transform: translateX(-8px); } }
 
+/* closing groups slide back out the same way, last card first */
+.tree ul.vanish { pointer-events: none; }
+.tree ul.vanish > li { animation: grow 0.2s ease-in reverse both; }
+.tree ul.vanish > li:nth-last-child(2) { animation-delay: 0.015s; }
+.tree ul.vanish > li:nth-last-child(3) { animation-delay: 0.03s; }
+.tree ul.vanish > li:nth-last-child(4) { animation-delay: 0.045s; }
+.tree ul.vanish > li:nth-last-child(n + 5) { animation-delay: 0.06s; }
+.tree ul.vanish::before { animation: fade 0.2s ease-in reverse both; }
+
 /* Quick search */
 .finder {
   width: min(600px, calc(100% - 24px));
@@ -1019,7 +1028,7 @@ dialog[open]::backdrop { animation: fade 0.22s ease-out; }
   html { scroll-behavior: auto; }
   .person, .branch-toggle::after { transition: none; }
   .person:hover, .person:focus-visible { transform: none; }
-  dialog[open], dialog:not(.finder)[open], dialog[open]::backdrop, .tree ul.appear > li, .more:not([hidden]), .menu-open #main-nav { animation: none; }
+  dialog[open], dialog:not(.finder)[open], dialog[open]::backdrop, .tree ul.appear > li, .tree ul.vanish > li, .tree ul.vanish::before, .more:not([hidden]), .menu-open #main-nav { animation: none; }
 }
 
 /* Printing gives a clean list of whoever is on screen */
