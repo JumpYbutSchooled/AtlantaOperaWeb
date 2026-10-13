@@ -1,19 +1,13 @@
-// ─────────────────────────────────────────────────────────────────────────────
 // Everyone on the site, and the family tree that arranges them.
-// Source: atlantaopera.org (Leadership, Orchestra, Chorus and Studio Artists pages).
+// Taken from the People pages on atlantaopera.org.
 //
-// PEOPLE — one entry per person, keyed by id (used in links: /#jane-doe)
-//   name     full name
-//   role     their main title, shown in their profile
-//   photo    path to their picture, or "" for an initials avatar
-//   link     their own website, or ""
-//   details  extra facts as [label, value] pairs
-//   bio      their bio — leave a blank line between paragraphs
+// PEOPLE: one entry per person. The key is used in links, e.g. /#tomer-zvulun
+//   name, role (main title), photo ("" shows initials), link (their website or ""),
+//   details ([label, value] pairs), bio (blank line between paragraphs)
 //
-// TREE — branches have a label, optional note (paragraphs) and photo, and children.
-//   A child is another branch, a person id, or { id, role } to show a different
-//   role on that card (e.g. someone who sits in two branches).
-// ─────────────────────────────────────────────────────────────────────────────
+// TREE: each group has a label, an optional note and photo, and children.
+//   A child is another group, a person's key, or { id, role } to show a
+//   different role on that card.
 
 window.PEOPLE = {
   "tomer-zvulun": { name: "Tomer Zvulun", role: "Carl W. Knobloch, Jr. General & Artistic Director", photo: "images/people/tomer-zvulun.jpg",

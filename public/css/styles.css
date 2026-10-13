@@ -75,14 +75,17 @@ button { font: inherit; color: inherit; }
   white-space: nowrap;
 }
 
-.eyebrow {
-  margin: 0 0 0.75rem;
-  color: var(--gold);
-  font-size: 0.8rem;
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 20;
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  color: var(--accent-ink);
   font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
 }
+.skip-link:focus { top: 12px; }
 
 /* Header */
 .site-header {
@@ -117,34 +120,39 @@ nav a:hover { color: var(--accent); }
 /* Hero */
 .hero {
   background:
-    radial-gradient(ellipse at 80% 0%, rgb(176 141 87 / 0.25), transparent 60%),
+    linear-gradient(rgb(26 8 12 / 0.72), rgb(26 8 12 / 0.82)),
+    url("../images/orchestra.jpg") center 40% / cover,
     var(--hero-bg);
   color: var(--hero-ink);
-  padding: clamp(4rem, 12vw, 8rem) 0;
+  padding: clamp(3.5rem, 10vw, 6.5rem) 0;
 }
 .hero h1 {
-  font-size: clamp(2.6rem, 7vw, 4.75rem);
-  max-width: 14ch;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  max-width: 16ch;
 }
 .lede {
-  max-width: 56ch;
+  max-width: 52ch;
   font-size: 1.15rem;
-  opacity: 0.85;
-  margin: 0 0 2rem;
+  opacity: 0.9;
+  margin: 0 0 1.75rem;
 }
 .button {
   display: inline-block;
-  padding: 0.8rem 1.6rem;
-  border: 1px solid var(--gold);
-  color: var(--hero-ink);
+  padding: 0.75rem 1.4rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-ink);
   text-decoration: none;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  transition: background 0.2s, color 0.2s;
 }
-.button:hover { background: var(--gold); color: var(--hero-bg); }
+.button:hover { filter: brightness(1.12); }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-.button-quiet { border-color: rgb(246 238 226 / 0.35); }
+.button-quiet { background: transparent; border-color: rgb(246 238 226 / 0.55); color: var(--hero-ink); }
+.button-quiet:hover { background: rgb(246 238 226 / 0.12); filter: none; }
+
+.jump { display: flex; flex-wrap: wrap; gap: 0.35rem 0.9rem; margin: 1.75rem 0 0; font-size: 0.95rem; opacity: 0.9; }.jump a { color: var(--hero-ink); text-underline-offset: 3px; }
+.jump a:hover { color: var(--gold); }
 
 /* About */
 .about { padding: 5rem 0; border-bottom: 1px solid var(--line); }
@@ -204,7 +212,7 @@ nav a:hover { color: var(--accent); }
 
 [hidden] { display: none !important; }
 
-/* Family tree / directory switch */
+/* Family tree / Everyone switch */
 .view-switch {
   display: inline-flex;
   flex: none;
@@ -240,7 +248,7 @@ nav a:hover { color: var(--accent); }
 .filters button:hover { border-color: var(--accent); }
 .filters button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 
-/* Directory */
+/* Everyone list */
 .directory { padding-top: 1rem; }
 .dir-group h3 {
   display: flex;
@@ -271,9 +279,9 @@ nav a:hover { color: var(--accent); }
 
 .tree {
   --stroke: 2px;
-  --elbow: 32px; /* narrow layout: how far down a card its connector meets it */
-  --cy: 30px; /* wide layout: the same, measured from the card's top */
-  --col: 34px; /* wide layout: room for connectors between columns */
+  --elbow: 32px; /* narrow: where the line meets a card */
+  --cy: 30px; /* wide: same, from the card's top */
+  --col: 34px; /* wide: gap between columns */
   max-width: 720px;
   margin: 0 auto;
 }
@@ -405,7 +413,7 @@ nav a:hover { color: var(--accent); }
 
 mark { background: var(--hit); color: inherit; padding: 0 0.1em; }
 
-/* Connectors — narrow screens: an indented tree that reads top to bottom */
+/* Lines, narrow screens: indented list */
 .tree ul ul { padding-left: 22px; }
 .tree li { padding-top: 10px; }
 .tree > ul > li { padding-top: 0; }
@@ -434,8 +442,7 @@ mark { background: var(--hit); color: inherit; padding: 0 0.1em; }
 }
 .tree ul ul > li:last-child::after { display: none; }
 
-/* Connectors — wide screens: a family tree that grows to the right, one column per generation.
-   Every column fits on screen, so the tree only ever scrolls down. */
+/* Lines, wide screens: tree grows to the right, one column per level */
 @container tree (min-width: 1070px) {
   .tree { max-width: 1080px; }
   .tree li { display: flex; align-items: flex-start; }
@@ -453,7 +460,7 @@ mark { background: var(--hit); color: inherit; padding: 0 0.1em; }
   .tree ul ul > li { --pt: 10px; padding: var(--pt) 0 0 calc(var(--col) / 2); }
   .tree ul ul > li:first-child { --pt: 0px; }
 
-  /* the vertical line joining brothers and sisters */
+  /* vertical line down the side of a group */
   .tree ul ul > li::before,
   .tree ul ul > li:last-child::before {
     left: 0;
@@ -474,14 +481,14 @@ mark { background: var(--hit); color: inherit; padding: 0 0.1em; }
     border-bottom-left-radius: 10px;
   }
 
-  /* the line into each card */
+  /* short line into each card */
   .tree ul ul > li::after {
     left: 0;
     top: calc(var(--pt) + var(--cy));
     width: calc(var(--col) / 2);
   }
 
-  /* an only child sits level with its parent: one straight line */
+  /* only child: one straight line */
   .tree ul ul > li:only-child::before { display: none; }
   .tree ul ul > li:only-child::after { display: block; }
 
@@ -491,7 +498,7 @@ mark { background: var(--hit); color: inherit; padding: 0 0.1em; }
   .branch-node { flex: none; width: 180px; min-height: 60px; }
   .person { flex: none; width: 236px; min-height: 60px; }
 
-  /* arrows point the way the tree grows */
+  /* arrows point right */
   .branch-toggle::after { transform: translateY(-50%) rotate(-45deg); }
   .is-open .branch-toggle::after { transform: translateY(-50%) rotate(135deg); }
 }
@@ -508,6 +515,8 @@ dialog {
   box-shadow: var(--shadow);
 }
 dialog::backdrop { background: rgb(20 10 12 / 0.6); backdrop-filter: blur(2px); }
+/* keep the close button visible on long bios */
+dialog > form { position: sticky; top: 0; height: 0; z-index: 2; }
 .dialog-close {
   position: absolute;
   top: 8px;
@@ -534,10 +543,11 @@ dialog::backdrop { background: rgb(20 10 12 / 0.6); backdrop-filter: blur(2px); 
 .dialog-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
 .dialog-banner img { width: 100%; max-height: 420px; object-fit: cover; display: block; }
 .dialog-info { padding: 2.5rem 2.25rem; }
+.dialog-dept { margin: 0 0 0.4rem; color: var(--gold); font-weight: 600; font-size: 0.95rem; }
 .dialog-info h2 { font-size: 2.4rem; margin-bottom: 0.2rem; padding-right: 2rem; }
 .dialog-role { margin: 0 0 1.25rem; color: var(--accent); font-weight: 600; }
 .dialog-details { margin: 0 0 1.25rem; display: grid; gap: 0.6rem; }
-.dialog-details dt { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
+.dialog-details dt { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
 .dialog-details dd { margin: 0; }
 .places { margin: 0; padding-left: 1.1rem; }
 .dialog-bio p { margin: 0 0 1rem; color: var(--muted); }
@@ -554,6 +564,32 @@ dialog::backdrop { background: rgb(20 10 12 / 0.6); backdrop-filter: blur(2px); 
   cursor: pointer;
 }
 .dialog-tree-link button:hover { color: var(--accent); }
+
+.dialog-nav {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+.dialog-nav button {
+  max-width: 42%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dialog-nav button:hover { border-color: var(--accent); color: var(--accent); }
+.dialog-nav span { color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
 
 /* Footer */
 .site-footer {

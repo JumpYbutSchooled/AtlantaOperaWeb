@@ -1,33 +1,24 @@
-# Atlanta Opera Info Site
+# Atlanta Opera Family Tree
 
-A static site showing everyone in The Atlanta Opera as a family tree, hosted on Firebase Hosting. Everything served is in `public/`. The people and text come from atlantaopera.org (the Leadership, Orchestra, Chorus, Studio Artists and Company pages).
+Who's who at The Atlanta Opera (leadership, board, orchestra, chorus and studio artists), shown as a family tree.
+Live at https://atlantaoperainfo.web.app
 
-## Editing people
+Names, photos and bios come from the People pages on atlantaopera.org.
 
-Everything lives in `public/js/people.js`. The comment at the top of that file explains the fields.
+## Files
 
-- **`PEOPLE`** has one entry per person: name, role, photo, website link, extra details, and bio.
-- **`TREE`** arranges them. Each branch has a `label`, optional `note` and `photo` (shown under the branch's "About" button), and `children`: more branches, person ids, or `{ id, role }` when a card should show a different role in that spot.
-- **Photos:** put images in `public/images/people/` and set `photo: "images/people/their-name.jpg"`. If `photo` is empty or the file is missing, their initials are shown.
-- **Linking to a person:** `https://atlantaoperainfo.web.app/#their-id` opens their profile and shows them in the tree.
+- `public/index.html`: the page and the About text
+- `public/js/people.js`: everyone's info (`PEOPLE`) and how the tree is laid out (`TREE`). The notes at the top of the file explain the fields.
+- `public/js/app.js`: draws the tree, the Everyone list and the profiles
+- `public/css/styles.css`: styles
+- `public/images/people/`: headshots
 
-The page text (intro, About, footer) is in `public/index.html`.
+To add a photo, put it in `public/images/people/` and set `photo: "images/people/their-name.jpg"`. Anyone without a photo gets their initials.
 
-The People section has two views, both built from `TREE`:
+`/#their-key` opens someone's profile (e.g. `/#tomer-zvulun`), and `/#everyone` opens the full list.
 
-- **Family tree:** on wide screens it grows to the right, one column per generation, so it only scrolls down. Narrower screens get an indented tree.
-- **Everyone:** everyone at once, grouped by department, sorted by surname, with department filters.
+## Running it
 
-## Preview locally
+Open `public/index.html` in a browser, or run `firebase emulators:start --only hosting`.
 
-Open `public/index.html` in a browser, or run:
-
-```
-firebase emulators:start --only hosting
-```
-
-## Deploy
-
-```
-firebase deploy --only hosting
-```
+Deploy with `firebase deploy --only hosting`.

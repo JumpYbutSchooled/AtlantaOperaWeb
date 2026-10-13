@@ -3,8 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Atlanta Opera — Family Tree</title>
-  <meta name="description" content="Meet the leadership, board, orchestra, chorus, and studio artists of The Atlanta Opera, arranged as a family tree.">
+  <title>The Atlanta Opera Family Tree</title>
+  <meta name="description" content="Who's who at The Atlanta Opera: the leadership, board, orchestra, chorus and studio artists.">
+  <meta property="og:title" content="The Atlanta Opera Family Tree">
+  <meta property="og:description" content="Who's who at The Atlanta Opera: the leadership, board, orchestra, chorus and studio artists.">
+  <meta property="og:image" content="https://atlantaoperainfo.web.app/images/orchestra.jpg">
+  <meta property="og:url" content="https://atlantaoperainfo.web.app/">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237a1f2b'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='34' text-anchor='middle' fill='%23e9d3a6'%3EAO%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +17,7 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#family-tree">Skip to the family tree</a>
   <header class="site-header">
     <div class="wrap header-inner">
       <a class="brand" href="#top">The Atlanta Opera</a>
@@ -26,17 +32,13 @@
   <main id="top">
     <section class="hero">
       <div class="wrap">
-        <p class="eyebrow">Meet the company</p>
-        <h1>The people behind every performance</h1>
-        <p class="lede">
-          The Atlanta Opera’s mission is to break the boundaries of opera to create exceptional
-          experiences for audiences everywhere. Meet the leadership, board, orchestra, chorus, and
-          studio artists who make it happen.
-        </p>
+        <h1>Who’s who at The Atlanta Opera</h1>
+        <p class="lede">The leadership, board, orchestra, chorus and studio artists, all in one place.</p>
         <div class="hero-actions">
-          <a class="button" href="#family-tree" data-show-view="tree">Explore the family tree</a>
+          <a class="button" href="#family-tree" data-show-view="tree">Open the family tree</a>
           <a class="button button-quiet" href="#family-tree" data-show-view="directory">See everyone</a>
         </div>
+        <p class="jump" id="jump" hidden></p>
       </div>
     </section>
 
@@ -118,8 +120,8 @@
 
           <h3>The NOW Festival</h3>
           <p>
-            The NOW Festival showcases emerging opera talent from historically under-represented communities. At its
-            heart is the 96-Hour Opera Project, where world-premiere mini-operas compete for a grand prize. The 2025
+            The NOW Festival showcases emerging opera talent from historically under-represented communities. Its
+            main event is the 96-Hour Opera Project, where brand-new mini-operas compete for a grand prize. The 2025
             winner, <em>Rosenbaum and Li</em>, is a chamber opera about identity, family, and choosing love in a
             divided world.
           </p>
@@ -173,6 +175,7 @@
       </div>
       <div class="tree-scroll" id="tree-scroll">
         <div id="tree" class="tree"></div>
+        <noscript><p class="wrap">The family tree needs JavaScript turned on.</p></noscript>
       </div>
       <div class="wrap">
         <div id="directory" class="directory" hidden></div>
@@ -183,8 +186,8 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <p>The Atlanta Opera · Information from <a href="https://www.atlantaopera.org/about/people/">atlantaopera.org</a></p>
-      <p class="small">© <span id="year"></span></p>
+      <p>Names, photos and bios are from <a href="https://www.atlantaopera.org/about/people/">atlantaopera.org</a>.</p>
+      <p class="small">Last updated October 2026. For tickets and news, visit <a href="https://www.atlantaopera.org/">atlantaopera.org</a>.</p>
     </div>
   </footer>
 
@@ -193,6 +196,11 @@
       <button class="dialog-close" aria-label="Close">&times;</button>
     </form>
     <div id="dialog-body" class="dialog-body"></div>
+    <div id="dialog-nav" class="dialog-nav" hidden>
+      <button type="button" id="prev"></button>
+      <span id="step"></span>
+      <button type="button" id="next"></button>
+    </div>
   </dialog>
 
   <script src="js/people.js"></script>

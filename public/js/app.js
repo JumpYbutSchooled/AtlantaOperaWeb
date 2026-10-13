@@ -2,24 +2,33 @@
   const PEOPLE = window.PEOPLE || {};
   const TREE = window.TREE;
 
-  const treeEl = document.getElementById("tree");
-  const scroller = document.getElementById("tree-scroll");
-  const openAll = document.getElementById("open-all");
-  const intro = document.getElementById("intro");
-  const dirEl = document.getElementById("directory");
-  const filtersEl = document.getElementById("filters");
-  const search = document.getElementById("search");
-  const resultCount = document.getElementById("result-count");
-  const empty = document.getElementById("empty");
-  const dialog = document.getElementById("dialog");
-  const dialogBody = document.getElementById("dialog-body");
+  const $ = (id) => document.getElementById(id);
+  const treeEl = $("tree");
+  const scroller = $("tree-scroll");
+  const openAll = $("open-all");
+  const intro = $("intro");
+  const dirEl = $("directory");
+  const filtersEl = $("filters");
+  const search = $("search");
+  const resultCount = $("result-count");
+  const empty = $("empty");
+  const dialog = $("dialog");
+  const dialogBody = $("dialog-body");
+  const dialogNav = $("dialog-nav");
+  const prevBtn = $("prev");
+  const nextBtn = $("next");
+  const step = $("step");
 
   const escape = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
-  // ── Prepare the tree: give every branch a key, a parent, and its set of people ──
-  const branches = new Map(); // key -> branch
-  const places = {}; // person id -> [{ branch, role }]
+  // Lower case without accents, so "ivan lopez" finds "Iván López".
+  const fold = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+  // Give every branch a key, a parent and the set of people under it,
+  // and note every place each person appears.
+  const branches = new Map();
+  const places = {};
 
   (function prep(node, parent) {
     node.key = `b${branches.size}`;
@@ -36,7 +45,7 @@
         }
         const p = PEOPLE[c.id];
         if (!p) {
-          console.warn("TREE mentions an unknown person:", c.id);
+          console.warn("Unknown person in TREE:", c.id);
           return null;
         }
         const role = c.role || p.role;
@@ -54,11 +63,12 @@
     return labels;
   };
 
-  // ── State ──
+  const depts = TREE.kids.filter((k) => k.label);
+
   let open = new Set([TREE.key]);
   let query = "";
   let view = "tree"; // or "directory"
-  let dept = "all"; // directory filter: "all" or a department's branch key
+  let dept = "all";
   try {
     if (localStorage.getItem("view") === "directory") view = "directory";
   } catch {}
@@ -71,7 +81,6 @@
     update();
   }
 
-  // Show the current view and draw it.
   function update() {
     const isTree = view === "tree";
     intro.textContent = isTree
@@ -86,7 +95,7 @@
     else renderDirectory();
   }
 
-  // Opening a branch closes its siblings that have branches of their own, so the tree stays readable.
+  // Opening a group closes the other groups beside it, so the tree stays short.
   function toggle(key) {
     const node = branches.get(key);
     if (open.has(key)) {
@@ -106,37 +115,41 @@
     for (const k of node.kids) if (k.label) closeDown(k);
   }
 
-  function reveal(id) {
-    const place = places[id]?.[0];
-    if (!place) return;
+  function openGroup(key) {
     open = new Set();
-    for (let b = place.branch; b; b = b.parent) open.add(b.key);
+    for (let b = branches.get(key); b; b = b.parent) open.add(b.key);
     if (query) search.value = query = "";
     if (view === "tree") render();
     else setView("tree");
+  }
+
+  function reveal(id) {
+    const place = places[id]?.[0];
+    if (!place) return;
+    openGroup(place.branch.key);
     const card = treeEl.querySelector(`.person[data-id="${CSS.escape(id)}"]`);
     if (card) card.scrollIntoView({ block: "nearest", inline: "center" });
   }
 
-  // ── Search ──
+  // Search
   const personMatches = (id, role) => {
     const p = PEOPLE[id];
-    return `${p.name} ${p.role} ${role}`.toLowerCase().includes(query);
+    return fold(`${p.name} ${p.role} ${role}`).includes(query);
   };
   const branchMatches = (node) =>
-    node.label.toLowerCase().includes(query) ||
+    fold(node.label).includes(query) ||
     node.kids.some((k) => (k.label ? branchMatches(k) : personMatches(k.id, k.role)));
 
-  // ── Rendering ──
+  // Drawing
   const initials = (name) => {
     const words = name.replace(/\b(Dr\.|The Very Reverend|Jr\.|IV)\b|,/g, "").trim().split(/\s+/);
     return (words[0][0] + (words.length > 1 ? words[words.length - 1][0] : "")).toUpperCase();
   };
 
-  const avatar = (p, cls = "avatar") =>
+  const avatar = (p) =>
     p.photo
-      ? `<span class="${cls}"><img src="${escape(p.photo)}" alt="" loading="lazy"></span>`
-      : `<span class="${cls} initials" aria-hidden="true">${escape(initials(p.name))}</span>`;
+      ? `<span class="avatar"><img src="${escape(p.photo)}" alt="" width="44" height="44" loading="lazy" decoding="async"></span>`
+      : `<span class="avatar initials" aria-hidden="true">${escape(initials(p.name))}</span>`;
 
   const plural = (n) => `${n} ${n === 1 ? "person" : "people"}`;
   const found = (n) => `${plural(n)} found`;
@@ -152,16 +165,17 @@
   }
 
   function branchHtml(node, depth, inMatchedBranch = false) {
-    const labelHit = query && node.label.toLowerCase().includes(query);
+    const labelHit = query && fold(node.label).includes(query);
     const showAll = inMatchedBranch || labelHit;
     if (query && !showAll && !branchMatches(node)) return "";
     const isOpen = query ? true : open.has(node.key);
     const kids = isOpen
       ? node.kids.map((k) => (k.label ? branchHtml(k, depth + 1, showAll) : personHtml(k, showAll))).join("")
       : "";
-    const info = node.note || node.photo
-      ? `<button type="button" class="branch-info" data-info="${node.key}" aria-label="About ${escape(node.label)}">About</button>`
-      : "";
+    const info =
+      node.note || node.photo
+        ? `<button type="button" class="branch-info" data-info="${node.key}" aria-label="About ${escape(node.label)}">About</button>`
+        : "";
 
     let box;
     if (depth === 0) {
@@ -174,12 +188,12 @@
           </button>${info}
         </div>`;
     }
-    const list = kids ? `<ul class="${node.isStack ? "stack" : "row"}">${kids}</ul>` : "";
+    const list = kids ? `<ul>${kids}</ul>` : "";
     return `<li class="branch">${box}${list}</li>`;
   }
 
   function render() {
-    treeEl.innerHTML = `<ul class="row">${branchHtml(TREE, 0)}</ul>`;
+    treeEl.innerHTML = `<ul>${branchHtml(TREE, 0)}</ul>`;
     if (query) {
       const n = new Set([...treeEl.querySelectorAll(".person.hit")].map((b) => b.dataset.id)).size;
       resultCount.textContent = n ? found(n) : "";
@@ -188,14 +202,18 @@
       resultCount.textContent = "";
       empty.hidden = true;
     }
-    // Searching opens every group with a match, so the button only matters when not searching.
-    openAll.hidden = Boolean(query);
+    openAll.hidden = Boolean(query); // a search already opens every group with a match
     openAll.textContent = open.size > 1 ? "Close all" : "Open all";
   }
 
-  // ── Directory: everyone at once, by department, A–Z by surname ──
-  const depts = TREE.kids.filter((k) => k.label);
+  function focusBranch(key) {
+    const el = treeEl.querySelector(`.branch-node[data-key="${key}"]`);
+    if (!el) return;
+    el.querySelector(".branch-toggle").focus({ preventScroll: true });
+    el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
 
+  // The "Everyone" list: each department, sorted by last name.
   const surname = (name) => {
     const words = name.replace(/,|\b(Dr\.|Jr\.|Sr\.|II|III|IV)(?=\s|$)/g, "").trim().split(/\s+/);
     return words[words.length - 1];
@@ -204,8 +222,8 @@
     surname(a.p.name).localeCompare(surname(b.p.name), undefined, { sensitivity: "base" }) ||
     a.p.name.localeCompare(b.p.name);
 
-  // Where someone sits, in words: "Strings", "Past Studio Artists (2025-26, 2024-25)".
-  // Group names their role already says ("Soprano", "Members" for a Board Member) are left out.
+  // Where someone sits, e.g. "Strings" or "Past Studio Artists (2025-26, 2024-25)".
+  // Groups their role already names ("Soprano", "Members" for a Board Member) are left out.
   const describeGroups = (paths, role) => {
     const said = (label) => role.toLowerCase().includes(label.toLowerCase().replace(/s$/, ""));
     const byPrefix = new Map();
@@ -225,8 +243,8 @@
       .join(" · ");
   };
 
-  const isUnder = (branch, dept) => {
-    for (let b = branch; b; b = b.parent) if (b === dept) return true;
+  const isUnder = (branch, d) => {
+    for (let b = branch; b; b = b.parent) if (b === d) return true;
     return false;
   };
 
@@ -236,10 +254,9 @@
       .map((id) => {
         const p = PEOPLE[id];
         const mine = places[id].filter((w) => isUnder(w.branch, d));
-        const role = p.role;
         const affiliation = (p.details || []).find(([k]) => k === "Affiliation")?.[1] || "";
-        const group = describeGroups(mine.map((w) => pathOf(w.branch).slice(1)), role) || affiliation;
-        return { id, p, role, group, text: `${p.name} ${role} ${group} ${affiliation}`.toLowerCase() };
+        const group = describeGroups(mine.map((w) => pathOf(w.branch).slice(1)), p.role) || affiliation;
+        return { id, p, group, text: fold(`${p.name} ${p.role} ${group} ${affiliation}`) };
       })
       .sort(byName),
   }));
@@ -267,7 +284,7 @@
                 ${avatar(x.p)}
                 <span class="person-text">
                   <span class="person-name">${escape(x.p.name)}</span>
-                  <span class="person-role">${escape(x.role)}</span>
+                  <span class="person-role">${escape(x.p.role)}</span>
                   ${x.group ? `<span class="person-group">${escape(x.group)}</span>` : ""}
                 </span>
               </button></li>`
@@ -282,14 +299,7 @@
     empty.hidden = n > 0;
   }
 
-  function focusBranch(key) {
-    const el = treeEl.querySelector(`.branch-node[data-key="${key}"]`);
-    if (!el) return;
-    el.querySelector(".branch-toggle").focus({ preventScroll: true });
-    el.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
-  }
-
-  // ── Dialog ──
+  // Profiles
   const paragraphs = (text) =>
     String(text || "")
       .split(/\n\s*\n/)
@@ -297,9 +307,20 @@
       .map((t) => `<p>${escape(t.trim())}</p>`)
       .join("");
 
-  function openPerson(id) {
+  // The people you can step through with Previous / Next: whoever was next to them on screen.
+  let ring = [];
+  const siblingsOf = (id) => {
+    const branch = places[id]?.[0]?.branch;
+    return branch ? branch.kids.filter((k) => !k.label).map((k) => k.id) : [id];
+  };
+  const firstName = (id) => PEOPLE[id].name.replace(/^Dr\.\s+/, "").split(" ")[0];
+
+  function openPerson(id, list) {
     const p = PEOPLE[id];
     if (!p) return;
+    if (list && list.includes(id)) ring = list;
+    else if (!ring.includes(id)) ring = siblingsOf(id);
+
     const where = places[id] || [];
     const details = (p.details || [])
       .map(([k, v]) => `<div><dt>${escape(k)}</dt><dd>${escape(v)}</dd></div>`)
@@ -307,18 +328,18 @@
     const placesHtml =
       where.length > 1
         ? `<div><dt>Where you’ll find them</dt><dd><ul class="places">${where
-            .map((w) => `<li>${escape(pathOf(w.branch).join(", "))}${w.role === p.role ? "" : ` — ${escape(w.role)}`}</li>`)
+            .map((w) => `<li>${escape(pathOf(w.branch).join(", "))}${w.role === p.role ? "" : ` (${escape(w.role)})`}</li>`)
             .join("")}</ul></dd></div>`
         : "";
     const link = p.link
-      ? `<p class="dialog-link"><a href="${escape(p.link)}" target="_blank" rel="noopener">Visit their website ↗</a></p>`
+      ? `<p class="dialog-link"><a href="${escape(p.link)}" target="_blank" rel="noopener">Visit their website</a></p>`
       : "";
 
     dialogBody.className = `dialog-body${p.photo ? "" : " no-photo"}`;
     dialogBody.innerHTML = `
-      ${p.photo ? `<div class="dialog-portrait"><img src="${escape(p.photo)}" alt="Photo of ${escape(p.name)}"></div>` : ""}
+      ${p.photo ? `<div class="dialog-portrait"><img src="${escape(p.photo)}" alt="${escape(p.name)}"></div>` : ""}
       <div class="dialog-info">
-        <p class="eyebrow">${escape(where[0] ? pathOf(where[0].branch)[0] : "")}</p>
+        <p class="dialog-dept">${escape(where[0] ? pathOf(where[0].branch)[0] : "")}</p>
         <h2 id="dialog-title">${escape(p.name)}</h2>
         <p class="dialog-role">${escape(p.role)}</p>
         ${details || placesHtml ? `<dl class="dialog-details">${details}${placesHtml}</dl>` : ""}
@@ -326,24 +347,44 @@
         ${link}
         <p class="dialog-tree-link"><button type="button" data-reveal="${escape(id)}">Find them in the family tree</button></p>
       </div>`;
+
+    const i = ring.indexOf(id);
+    const n = ring.length;
+    dialogNav.hidden = n < 2;
+    if (n > 1) {
+      const prev = ring[(i - 1 + n) % n];
+      const next = ring[(i + 1) % n];
+      prevBtn.dataset.id = prev;
+      nextBtn.dataset.id = next;
+      prevBtn.textContent = `‹ ${firstName(prev)}`;
+      nextBtn.textContent = `${firstName(next)} ›`;
+      prevBtn.setAttribute("aria-label", `Previous: ${PEOPLE[prev].name}`);
+      nextBtn.setAttribute("aria-label", `Next: ${PEOPLE[next].name}`);
+      step.textContent = `${i + 1} of ${n}`;
+    }
+
     if (location.hash !== `#${id}`) history.replaceState(null, "", `#${id}`);
+    dialog.scrollTop = 0;
     if (!dialog.open) dialog.showModal();
   }
 
   function openBranchInfo(key) {
     const b = branches.get(key);
+    dialogNav.hidden = true;
+    if (location.hash) history.replaceState(null, "", location.pathname + location.search);
     dialogBody.className = "dialog-body branch-dialog";
     dialogBody.innerHTML = `
       ${b.photo ? `<div class="dialog-banner"><img src="${escape(b.photo)}" alt="The Atlanta Opera ${escape(b.label)}"></div>` : ""}
       <div class="dialog-info">
-        <p class="eyebrow">${escape(plural(b.ids.size))}</p>
+        <p class="dialog-dept">${escape(plural(b.ids.size))}</p>
         <h2 id="dialog-title">${escape(b.label)}</h2>
         <div class="dialog-bio">${(b.note || []).map((t) => `<p>${escape(t)}</p>`).join("")}</div>
       </div>`;
+    dialog.scrollTop = 0;
     if (!dialog.open) dialog.showModal();
   }
 
-  // A photo that doesn't load falls back to initials.
+  // A photo that won't load falls back to initials.
   document.addEventListener(
     "error",
     (e) => {
@@ -363,13 +404,20 @@
     true
   );
 
-  // ── Events ──
+  // The ids of the cards shown alongside this one.
+  const neighbours = (card, selector) => [...card.closest(selector).querySelectorAll(".person")].map((b) => b.dataset.id);
+
   treeEl.addEventListener("click", (e) => {
     const t = e.target.closest("[data-toggle], [data-info], .person");
     if (!t) return;
     if (t.dataset.toggle) toggle(t.dataset.toggle);
     else if (t.dataset.info) openBranchInfo(t.dataset.info);
-    else openPerson(t.dataset.id);
+    else openPerson(t.dataset.id, [...t.closest("ul").children].map((li) => li.querySelector(":scope > .person")?.dataset.id).filter(Boolean));
+  });
+
+  dirEl.addEventListener("click", (e) => {
+    const t = e.target.closest(".person");
+    if (t) openPerson(t.dataset.id, neighbours(t, ".dir-grid"));
   });
 
   dialog.addEventListener("click", (e) => {
@@ -378,17 +426,20 @@
     if (r) {
       dialog.close();
       reveal(r.dataset.reveal);
-      document.getElementById("family-tree").scrollIntoView({ behavior: "smooth" });
+      $("family-tree").scrollIntoView({ behavior: "smooth" });
     }
+  });
+
+  prevBtn.addEventListener("click", () => openPerson(prevBtn.dataset.id));
+  nextBtn.addEventListener("click", () => openPerson(nextBtn.dataset.id));
+  dialog.addEventListener("keydown", (e) => {
+    if (dialogNav.hidden) return;
+    if (e.key === "ArrowLeft") prevBtn.click();
+    if (e.key === "ArrowRight") nextBtn.click();
   });
 
   dialog.addEventListener("close", () => {
     if (location.hash) history.replaceState(null, "", location.pathname + location.search);
-  });
-
-  dirEl.addEventListener("click", (e) => {
-    const t = e.target.closest(".person");
-    if (t) openPerson(t.dataset.id);
   });
 
   filtersEl.addEventListener("click", (e) => {
@@ -400,15 +451,25 @@
 
   document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
 
-  // Header and hero links that jump to a particular view.
   document.querySelectorAll("[data-show-view]").forEach((a) =>
     a.addEventListener("click", () => {
       if (view !== a.dataset.showView) setView(a.dataset.showView);
     })
   );
 
+  // "Go straight to" links in the header area.
+  const jump = $("jump");
+  jump.innerHTML =
+    "Go straight to: " +
+    depts.map((d) => `<a href="#family-tree" data-jump="${d.key}">${escape(d.label)}</a>`).join("");
+  jump.hidden = false;
+  jump.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-jump]");
+    if (a) openGroup(a.dataset.jump);
+  });
+
   search.addEventListener("input", () => {
-    query = search.value.trim().toLowerCase();
+    query = fold(search.value.trim());
     update();
   });
 
@@ -417,18 +478,20 @@
     render();
   });
 
-  // Links like yoursite.com/#person-id open that person directly.
+  // yoursite/#jane-doe opens Jane's profile; yoursite/#everyone opens the list.
   const openFromHash = () => {
     const id = decodeURIComponent(location.hash.slice(1));
-    if (PEOPLE[id]) {
+    if (id === "everyone") {
+      setView("directory");
+      $("family-tree").scrollIntoView();
+    } else if (PEOPLE[id]) {
       reveal(id);
       openPerson(id);
     }
   };
   window.addEventListener("hashchange", openFromHash);
 
-  document.getElementById("year").textContent = new Date().getFullYear();
-  query = search.value.trim().toLowerCase(); // browsers can restore the box's text on Back
+  query = fold(search.value.trim()); // the browser may have kept the search text after going Back
   update();
   openFromHash();
 })();
