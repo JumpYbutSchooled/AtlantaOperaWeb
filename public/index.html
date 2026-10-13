@@ -46,6 +46,7 @@
 
   <main id="top">
     <section class="hero">
+      <div class="hero-photo" id="hero-photo" aria-hidden="true"></div>
       <div class="wrap">
         <h1>Who’s who at The Atlanta Opera</h1>
         <p class="lede">The leadership, board, orchestra, chorus and studio artists, all in one place.</p>
@@ -68,8 +69,7 @@
             Artistic Director Tomer Zvulun since 2014, The Atlanta Opera presents four mainstage productions at Cobb
             Energy Centre and two innovative Discoveries operas creatively offered in venues throughout metro Atlanta.
           </p>
-          <details>
-            <summary>Read more</summary>
+          <div class="more" id="more-company">
             <p>
               If success is rooted in quality—staging world-class productions of timeless classics and cutting-edge
               stories from modern history—our growth is rooted in courage.
@@ -101,7 +101,8 @@
               States—joining Chicago, Houston, Washington, D.C., and Los Angeles, among others.
             </p>
             <p>Quality, Vitality, Creativity, Diversity, Courage—The Atlanta Opera is in sync with our city.</p>
-          </details>
+          </div>
+          <button type="button" class="read-more" aria-controls="more-company" hidden>Read more</button>
 
           <h3>Our History</h3>
           <p>
@@ -148,8 +149,7 @@
             rich demographic tapestry of Atlanta by including its many diverse voices and experiences in all facets of
             our organization.
           </p>
-          <details>
-            <summary>Read more</summary>
+          <div class="more" id="more-culture">
             <p>
               The Atlanta Opera respects all people and passionately celebrates the cultural differences that make this
               country, our city, and this art form strong. We are committed to fostering community dialogue that
@@ -161,7 +161,8 @@
               evolving relevance of existing works today. We will continue to collaborate with our community to
               contextualize and interpret historical masterpieces while fostering the creation of new ones.
             </p>
-          </details>
+          </div>
+          <button type="button" class="read-more" aria-controls="more-culture" hidden>Read more</button>
         </div>
       </div>
     </section>

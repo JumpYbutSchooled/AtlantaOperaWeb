@@ -546,6 +546,23 @@
   };
   window.addEventListener("hashchange", openFromHash);
 
+  // "Read more" in the About section: the button sits under the extra text.
+  document.querySelectorAll(".read-more").forEach((btn) => {
+    const more = $(btn.getAttribute("aria-controls"));
+    const set = (open) => {
+      more.hidden = !open;
+      btn.textContent = open ? "Show less" : "Read more";
+      btn.setAttribute("aria-expanded", open);
+    };
+    set(false);
+    btn.hidden = false;
+    btn.addEventListener("click", () => {
+      const opening = more.hidden;
+      set(opening);
+      if (!opening) btn.scrollIntoView({ block: "nearest" });
+    });
+  });
+
   // Photos fade in once loaded.
   document.addEventListener("load", (e) => e.target.tagName === "IMG" && e.target.classList.add("loaded"), true);
 
@@ -569,9 +586,20 @@
   // Header shadow, current section in the menu, and the back-to-top button.
   const header = $("site-header");
   const toTop = $("to-top");
+  const heroPhoto = $("hero-photo");
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let ticking = false;
   const onScroll = () => {
     header.classList.toggle("scrolled", scrollY > 8);
     toTop.hidden = scrollY < 900;
+    // the header photo moves at 40% of the scroll speed while it's on screen
+    if (!still && !ticking && scrollY < innerHeight * 1.2) {
+      ticking = true;
+      requestAnimationFrame(() => {
+        heroPhoto.style.transform = `translate3d(0, ${Math.round(scrollY * 0.4)}px, 0)`;
+        ticking = false;
+      });
+    }
   };
   addEventListener("scroll", onScroll, { passive: true });
   onScroll();
