@@ -16,7 +16,7 @@ The page text (intro, About, footer) is in `public/index.html`.
 The People section has two views, both built from `TREE`:
 
 - **Family tree:** on wide screens it grows to the right, one column per generation, so it only scrolls down. Narrower screens get an indented tree.
-- **Directory A–Z:** everyone at once, grouped by department, sorted by surname, with department filters.
+- **Everyone:** everyone at once, grouped by department, sorted by surname, with department filters.
 
 ## Preview locally
 
