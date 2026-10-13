@@ -19,6 +19,8 @@
   const nextBtn = $("next");
   const step = $("step");
 
+  document.documentElement.classList.add("js");
+
   const escape = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -65,6 +67,18 @@
 
   const depts = TREE.kids.filter((k) => k.label);
 
+  // Each person's department number (for the colour behind their initials) and
+  // everything they can be searched by besides their name.
+  const deptOf = {};
+  const searchText = {};
+  for (const [id, list] of Object.entries(places)) {
+    const top = pathOf(list[0].branch)[0];
+    deptOf[id] = depts.findIndex((d) => d.label === top) + 1;
+    searchText[id] = fold(
+      [PEOPLE[id].role, ...list.map((w) => `${w.role} ${pathOf(w.branch).join(" ")}`)].join(" ")
+    );
+  }
+
   let open = new Set([TREE.key]);
   let query = "";
   let view = "tree"; // or "directory"
@@ -105,6 +119,7 @@
         for (const sib of node.parent.kids) if (sib.label && sib !== node && !sib.isStack) closeDown(sib);
       }
       open.add(key);
+      justOpened = key;
     }
     render();
     focusBranch(key);
@@ -146,10 +161,10 @@
     return (words[0][0] + (words.length > 1 ? words[words.length - 1][0] : "")).toUpperCase();
   };
 
-  const avatar = (p) =>
+  const avatar = (p, id) =>
     p.photo
       ? `<span class="avatar"><img src="${escape(p.photo)}" alt="" width="44" height="44" loading="lazy" decoding="async"></span>`
-      : `<span class="avatar initials" aria-hidden="true">${escape(initials(p.name))}</span>`;
+      : `<span class="avatar initials t${deptOf[id] || 1}" aria-hidden="true">${escape(initials(p.name))}</span>`;
 
   const plural = (n) => `${n} ${n === 1 ? "person" : "people"}`;
   const found = (n) => `${plural(n)} found`;
@@ -159,7 +174,7 @@
     const p = PEOPLE[k.id];
     const hit = query && personMatches(k.id, k.role) ? " hit" : "";
     return `<li class="leaf"><button type="button" class="person${hit}" data-id="${escape(k.id)}">
-        ${avatar(p)}
+        ${avatar(p, k.id)}
         <span class="person-text"><span class="person-name">${escape(p.name)}</span><span class="person-role">${escape(k.role)}</span></span>
       </button></li>`;
   }
@@ -188,12 +203,15 @@
           </button>${info}
         </div>`;
     }
-    const list = kids ? `<ul>${kids}</ul>` : "";
+    const list = kids ? `<ul${node.key === justOpened ? ' class="appear"' : ""}>${kids}</ul>` : "";
     return `<li class="branch">${box}${list}</li>`;
   }
 
+  let justOpened = null; // the group to animate on the next draw
+
   function render() {
     treeEl.innerHTML = `<ul>${branchHtml(TREE, 0)}</ul>`;
+    justOpened = null;
     if (query) {
       const n = new Set([...treeEl.querySelectorAll(".person.hit")].map((b) => b.dataset.id)).size;
       resultCount.textContent = n ? found(n) : "";
@@ -281,7 +299,7 @@
           <ul class="dir-grid">${g.list
             .map(
               (x) => `<li><button type="button" class="person" data-id="${escape(x.id)}">
-                ${avatar(x.p)}
+                ${avatar(x.p, x.id)}
                 <span class="person-text">
                   <span class="person-name">${escape(x.p.name)}</span>
                   <span class="person-role">${escape(x.p.role)}</span>
@@ -306,6 +324,29 @@
       .filter((t) => t.trim())
       .map((t) => `<p>${escape(t.trim())}</p>`)
       .join("");
+
+  const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+  const icons = {
+    globe: svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>'),
+    link: svg('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
+    share: svg('<path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>'),
+    tree: svg('<circle cx="6" cy="5" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><path d="M6 7v12h10M6 12h10"/>'),
+    check: svg('<path d="M5 12l5 5 9-10"/>'),
+  };
+  // phones get the system share sheet, computers get "Copy link"
+  const canShare = Boolean(navigator.share) && matchMedia("(pointer: coarse)").matches;
+
+  // The last few people someone looked at, shown in the quick search.
+  let recent = [];
+  try {
+    recent = JSON.parse(localStorage.getItem("recent") || "[]").filter((id) => PEOPLE[id]);
+  } catch {}
+  function remember(id) {
+    recent = [id, ...recent.filter((r) => r !== id)].slice(0, 5);
+    try {
+      localStorage.setItem("recent", JSON.stringify(recent));
+    } catch {}
+  }
 
   // The people you can step through with Previous / Next: whoever was next to them on screen.
   let ring = [];
@@ -332,7 +373,7 @@
             .join("")}</ul></dd></div>`
         : "";
     const link = p.link
-      ? `<p class="dialog-link"><a href="${escape(p.link)}" target="_blank" rel="noopener">Visit their website</a></p>`
+      ? `<a href="${escape(p.link)}" target="_blank" rel="noopener">${icons.globe}Their website</a>`
       : "";
 
     dialogBody.className = `dialog-body${p.photo ? "" : " no-photo"}`;
@@ -344,9 +385,13 @@
         <p class="dialog-role">${escape(p.role)}</p>
         ${details || placesHtml ? `<dl class="dialog-details">${details}${placesHtml}</dl>` : ""}
         <div class="dialog-bio">${paragraphs(p.bio)}</div>
-        ${link}
-        <p class="dialog-tree-link"><button type="button" data-reveal="${escape(id)}">Find them in the family tree</button></p>
+        <p class="dialog-actions">
+          ${link}
+          <button type="button" data-share="${escape(id)}">${canShare ? icons.share + "Share" : icons.link + "Copy link"}</button>
+          <button type="button" data-reveal="${escape(id)}">${icons.tree}Show in the family tree</button>
+        </p>
       </div>`;
+    remember(id);
 
     const i = ring.indexOf(id);
     const n = ring.length;
@@ -420,13 +465,29 @@
     if (t) openPerson(t.dataset.id, neighbours(t, ".dir-grid"));
   });
 
-  dialog.addEventListener("click", (e) => {
+  dialog.addEventListener("click", async (e) => {
     if (e.target === dialog) dialog.close();
     const r = e.target.closest("[data-reveal]");
     if (r) {
       dialog.close();
+      if (view !== "tree") setView("tree");
       reveal(r.dataset.reveal);
-      $("family-tree").scrollIntoView({ behavior: "smooth" });
+      const card = treeEl.querySelector(`.person[data-id="${CSS.escape(r.dataset.reveal)}"]`);
+      card?.scrollIntoView({ block: "center", behavior: "smooth" });
+      card?.classList.add("flash");
+    }
+    const s = e.target.closest("[data-share]");
+    if (s) {
+      const p = PEOPLE[s.dataset.share];
+      const url = `${location.origin}${location.pathname}#${s.dataset.share}`;
+      try {
+        if (canShare) await navigator.share({ title: p.name, text: `${p.name}, ${p.role}`, url });
+        else {
+          await navigator.clipboard.writeText(url);
+          s.innerHTML = icons.check + "Link copied";
+          setTimeout(() => (s.innerHTML = icons.link + "Copy link"), 2000);
+        }
+      } catch {} // the visitor closed the share sheet, or the clipboard isn't allowed
     }
   });
 
@@ -436,6 +497,17 @@
     if (dialogNav.hidden) return;
     if (e.key === "ArrowLeft") prevBtn.click();
     if (e.key === "ArrowRight") nextBtn.click();
+  });
+
+  // Swipe left or right on a profile to see the next person.
+  let touch = null;
+  dialog.addEventListener("touchstart", (e) => (touch = e.touches[0]), { passive: true });
+  dialog.addEventListener("touchend", (e) => {
+    if (!touch || dialogNav.hidden) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touch.clientX;
+    if (Math.abs(dx) > 70 && Math.abs(t.clientY - touch.clientY) < 50) (dx < 0 ? nextBtn : prevBtn).click();
+    touch = null;
   });
 
   dialog.addEventListener("close", () => {
@@ -450,12 +522,6 @@
   });
 
   document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => setView(b.dataset.view)));
-
-  document.querySelectorAll("[data-show-view]").forEach((a) =>
-    a.addEventListener("click", () => {
-      if (view !== a.dataset.showView) setView(a.dataset.showView);
-    })
-  );
 
   search.addEventListener("input", () => {
     query = fold(search.value.trim());
@@ -472,13 +538,157 @@
     const id = decodeURIComponent(location.hash.slice(1));
     if (id === "everyone") {
       setView("directory");
-      $("family-tree").scrollIntoView();
+      $("people").scrollIntoView();
     } else if (PEOPLE[id]) {
       reveal(id);
       openPerson(id);
     }
   };
   window.addEventListener("hashchange", openFromHash);
+
+  // Photos fade in once loaded.
+  document.addEventListener("load", (e) => e.target.tagName === "IMG" && e.target.classList.add("loaded"), true);
+
+  // Light / dark switch. Without a choice the site follows the device setting.
+  const themeBtn = $("theme-toggle");
+  const darkNow = () =>
+    document.documentElement.dataset.theme
+      ? document.documentElement.dataset.theme === "dark"
+      : matchMedia("(prefers-color-scheme: dark)").matches;
+  const labelTheme = () => themeBtn.setAttribute("aria-label", darkNow() ? "Switch to light mode" : "Switch to dark mode");
+  themeBtn.addEventListener("click", () => {
+    const next = darkNow() ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try {
+      localStorage.setItem("theme", next);
+    } catch {}
+    labelTheme();
+  });
+  labelTheme();
+
+  // Header shadow, current section in the menu, and the back-to-top button.
+  const header = $("site-header");
+  const toTop = $("to-top");
+  const onScroll = () => {
+    header.classList.toggle("scrolled", scrollY > 8);
+    toTop.hidden = scrollY < 900;
+  };
+  addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+  toTop.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
+
+  const navLinks = [...document.querySelectorAll("nav a")];
+  const spy = new IntersectionObserver(
+    (entries) => {
+      for (const en of entries) {
+        if (!en.isIntersecting) continue;
+        navLinks.forEach((a) => a.classList.toggle("current", a.getAttribute("href") === `#${en.target.id}`));
+      }
+    },
+    { rootMargin: "-40% 0px -55% 0px" }
+  );
+  // the hero has no menu link, so reaching it clears the highlight
+  [document.querySelector(".hero"), $("about"), $("people")].forEach((el) => spy.observe(el));
+
+  // Quick search: press "/" (or Ctrl+K) anywhere, type a few letters, press Enter.
+  const finder = $("finder");
+  const finderInput = $("finder-input");
+  const finderResults = $("finder-results");
+  let hits = [];
+  let sel = 0;
+
+  const highlight = (name, q) => {
+    const at = fold(name).indexOf(q);
+    if (!q || at < 0) return escape(name);
+    return escape(name.slice(0, at)) + "<mark>" + escape(name.slice(at, at + q.length)) + "</mark>" + escape(name.slice(at + q.length));
+  };
+
+  function findPeople(q) {
+    const words = q.split(" ").filter(Boolean);
+    const scored = [];
+    for (const id of Object.keys(places)) {
+      const name = fold(PEOPLE[id].name);
+      if (!words.every((w) => name.includes(w) || searchText[id].includes(w))) continue;
+      let score = 4;
+      if (name.startsWith(q)) score = 0;
+      else if (name.split(" ").some((w) => w.startsWith(words[0]))) score = 1;
+      else if (name.includes(q)) score = 2;
+      else if (words.some((w) => name.includes(w))) score = 3;
+      scored.push([score, id]);
+    }
+    return scored
+      .sort((a, b) => a[0] - b[0] || surname(PEOPLE[a[1]].name).localeCompare(surname(PEOPLE[b[1]].name)))
+      .slice(0, 8)
+      .map(([, id]) => id);
+  }
+
+  function drawFinder() {
+    const q = fold(finderInput.value.trim());
+    hits = q ? findPeople(q) : recent;
+    sel = Math.min(sel, Math.max(hits.length - 1, 0));
+    const row = (id, i) => {
+      const p = PEOPLE[id];
+      const where = pathOf(places[id][0].branch)[0];
+      return `<li role="option" id="hit-${i}" data-id="${escape(id)}" aria-selected="${i === sel}">
+          ${avatar(p, id)}
+          <span><b>${highlight(p.name, q)}</b><small>${escape(p.role)} · ${escape(where)}</small></span>
+        </li>`;
+    };
+    if (!q && !hits.length) {
+      finderResults.innerHTML = `<li class="finder-empty">Type a name, an instrument like “cello”, or a role like “tenor”.</li>`;
+    } else if (!hits.length) {
+      finderResults.innerHTML = `<li class="finder-empty">No one found. Try another spelling.</li>`;
+    } else {
+      finderResults.innerHTML = (q ? "" : `<li class="finder-label">Recently viewed</li>`) + hits.map(row).join("");
+    }
+    finderInput.setAttribute("aria-activedescendant", hits.length ? `hit-${sel}` : "");
+  }
+
+  function openFinder() {
+    if (dialog.open) dialog.close();
+    sel = 0;
+    finderInput.value = "";
+    drawFinder();
+    finder.showModal();
+    finderInput.focus();
+  }
+
+  function pick(id) {
+    finder.close();
+    openPerson(id, hits);
+  }
+
+  $("finder-open").addEventListener("click", openFinder);
+  finderInput.addEventListener("input", () => {
+    sel = 0;
+    drawFinder();
+  });
+  finderInput.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!hits.length) return;
+      sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + hits.length) % hits.length;
+      drawFinder();
+      $(`hit-${sel}`)?.scrollIntoView({ block: "nearest" });
+    } else if (e.key === "Enter" && hits[sel]) {
+      e.preventDefault();
+      pick(hits[sel]);
+    }
+  });
+  finderResults.addEventListener("click", (e) => {
+    const li = e.target.closest("[data-id]");
+    if (li) pick(li.dataset.id);
+  });
+  finder.addEventListener("click", (e) => e.target === finder && finder.close());
+
+  document.addEventListener("keydown", (e) => {
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+    if ((e.key === "/" && !typing) || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k")) {
+      if (finder.open) return;
+      e.preventDefault();
+      openFinder();
+    }
+  });
 
   query = fold(search.value.trim()); // the browser may have kept the search text after going Back
   update();
