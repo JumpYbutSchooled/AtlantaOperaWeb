@@ -4,7 +4,8 @@
 
   const treeEl = document.getElementById("tree");
   const scroller = document.getElementById("tree-scroll");
-  const treeActions = document.getElementById("tree-actions");
+  const openAll = document.getElementById("open-all");
+  const intro = document.getElementById("intro");
   const dirEl = document.getElementById("directory");
   const filtersEl = document.getElementById("filters");
   const search = document.getElementById("search");
@@ -73,9 +74,12 @@
   // Show the current view and draw it.
   function update() {
     const isTree = view === "tree";
+    intro.textContent = isTree
+      ? "Pick a group to see who’s in it, then pick a name to learn more."
+      : "Everyone in the company, sorted by last name. Pick a name to learn more.";
     document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === view));
     scroller.hidden = !isTree;
-    treeActions.hidden = !isTree;
+    openAll.hidden = !isTree;
     filtersEl.hidden = isTree;
     dirEl.hidden = isTree;
     if (isTree) render();
@@ -135,6 +139,7 @@
       : `<span class="${cls} initials" aria-hidden="true">${escape(initials(p.name))}</span>`;
 
   const plural = (n) => `${n} ${n === 1 ? "person" : "people"}`;
+  const found = (n) => `${plural(n)} found`;
 
   function personHtml(k, inMatchedBranch) {
     if (query && !inMatchedBranch && !personMatches(k.id, k.role)) return "";
@@ -176,13 +181,16 @@
   function render() {
     treeEl.innerHTML = `<ul class="row">${branchHtml(TREE, 0)}</ul>`;
     if (query) {
-      const n = treeEl.querySelectorAll(".person.hit").length;
-      resultCount.textContent = n ? `${n} ${n === 1 ? "match" : "matches"}` : "";
+      const n = new Set([...treeEl.querySelectorAll(".person.hit")].map((b) => b.dataset.id)).size;
+      resultCount.textContent = n ? found(n) : "";
       empty.hidden = n > 0 || treeEl.querySelector("mark") !== null;
     } else {
       resultCount.textContent = "";
       empty.hidden = true;
     }
+    // Searching opens every group with a match, so the button only matters when not searching.
+    openAll.hidden = Boolean(query);
+    openAll.textContent = open.size > 1 ? "Close all" : "Open all";
   }
 
   // ── Directory: everyone at once, by department, A–Z by surname ──
@@ -196,16 +204,25 @@
     surname(a.p.name).localeCompare(surname(b.p.name), undefined, { sensitivity: "base" }) ||
     a.p.name.localeCompare(b.p.name);
 
-  // "Past Studio Artists › 2025-26, 2024-25 · Resident Artist"
-  const describeGroups = (paths) => {
+  // Where someone sits, in words: "Strings", "Past Studio Artists (2025-26, 2024-25)".
+  // Group names their role already says ("Soprano", "Members" for a Board Member) are left out.
+  const describeGroups = (paths, role) => {
+    const said = (label) => role.toLowerCase().includes(label.toLowerCase().replace(/s$/, ""));
     const byPrefix = new Map();
     for (const path of paths) {
       if (!path.length) continue;
-      const prefix = path.slice(0, -1).join(" › ");
+      const prefix = path.slice(0, -1).join(", ");
+      const last = path[path.length - 1];
       if (!byPrefix.has(prefix)) byPrefix.set(prefix, []);
-      byPrefix.get(prefix).push(path[path.length - 1]);
+      if (!said(last)) byPrefix.get(prefix).push(last);
     }
-    return [...byPrefix].map(([prefix, lasts]) => (prefix ? `${prefix} › ` : "") + lasts.join(", ")).join(" · ");
+    return [...byPrefix]
+      .map(([prefix, lasts]) => {
+        if (!prefix) return lasts.join(", ");
+        return lasts.length ? `${prefix} (${lasts.join(", ")})` : prefix;
+      })
+      .filter(Boolean)
+      .join(" · ");
   };
 
   const isUnder = (branch, dept) => {
@@ -219,17 +236,16 @@
       .map((id) => {
         const p = PEOPLE[id];
         const mine = places[id].filter((w) => isUnder(w.branch, d));
-        const role = mine.length === 1 ? mine[0].role : p.role;
-        let group = describeGroups(mine.map((w) => pathOf(w.branch).slice(1)));
-        const plain = (s) => s.toLowerCase().replace(/s$/, "");
-        if (plain(group) === plain(role)) group = ""; // "Honorary Member" in "Honorary Members"
-        return { id, p, role, group, text: `${p.name} ${p.role} ${role} ${group}`.toLowerCase() };
+        const role = p.role;
+        const affiliation = (p.details || []).find(([k]) => k === "Affiliation")?.[1] || "";
+        const group = describeGroups(mine.map((w) => pathOf(w.branch).slice(1)), role) || affiliation;
+        return { id, p, role, group, text: `${p.name} ${role} ${group} ${affiliation}`.toLowerCase() };
       })
       .sort(byName),
   }));
 
   function renderDirectory() {
-    filtersEl.innerHTML = [["all", "Everyone", TREE.ids.size], ...depts.map((d) => [d.key, d.label, d.ids.size])]
+    filtersEl.innerHTML = [["all", "All", TREE.ids.size], ...depts.map((d) => [d.key, d.label, d.ids.size])]
       .map(
         ([key, label, n]) =>
           `<button type="button" data-dept="${key}" aria-pressed="${key === dept}">${escape(label)}<span>${n}</span></button>`
@@ -262,7 +278,7 @@
       .join("");
 
     const n = new Set(groups.flatMap((g) => g.list.map((x) => x.id))).size;
-    resultCount.textContent = query ? `${n} ${n === 1 ? "match" : "matches"}` : plural(n);
+    resultCount.textContent = query ? found(n) : "";
     empty.hidden = n > 0;
   }
 
@@ -290,25 +306,25 @@
       .join("");
     const placesHtml =
       where.length > 1
-        ? `<div><dt>In the family tree</dt><dd><ul class="places">${where
-            .map((w) => `<li>${escape(pathOf(w.branch).join(" › "))} — ${escape(w.role)}</li>`)
+        ? `<div><dt>Where you’ll find them</dt><dd><ul class="places">${where
+            .map((w) => `<li>${escape(pathOf(w.branch).join(", "))}${w.role === p.role ? "" : ` — ${escape(w.role)}`}</li>`)
             .join("")}</ul></dd></div>`
         : "";
     const link = p.link
-      ? `<p class="dialog-link"><a href="${escape(p.link)}" target="_blank" rel="noopener">Visit website ↗</a></p>`
+      ? `<p class="dialog-link"><a href="${escape(p.link)}" target="_blank" rel="noopener">Visit their website ↗</a></p>`
       : "";
 
     dialogBody.className = `dialog-body${p.photo ? "" : " no-photo"}`;
     dialogBody.innerHTML = `
       ${p.photo ? `<div class="dialog-portrait"><img src="${escape(p.photo)}" alt="Photo of ${escape(p.name)}"></div>` : ""}
       <div class="dialog-info">
-        <p class="eyebrow">${escape(where[0] ? pathOf(where[0].branch).join(" › ") : "")}</p>
+        <p class="eyebrow">${escape(where[0] ? pathOf(where[0].branch)[0] : "")}</p>
         <h2 id="dialog-title">${escape(p.name)}</h2>
         <p class="dialog-role">${escape(p.role)}</p>
         ${details || placesHtml ? `<dl class="dialog-details">${details}${placesHtml}</dl>` : ""}
         <div class="dialog-bio">${paragraphs(p.bio)}</div>
         ${link}
-        <p class="dialog-tree-link"><button type="button" data-reveal="${escape(id)}">Show in family tree</button></p>
+        <p class="dialog-tree-link"><button type="button" data-reveal="${escape(id)}">Find them in the family tree</button></p>
       </div>`;
     if (location.hash !== `#${id}`) history.replaceState(null, "", `#${id}`);
     if (!dialog.open) dialog.showModal();
@@ -396,12 +412,8 @@
     update();
   });
 
-  document.getElementById("expand-all").addEventListener("click", () => {
-    open = new Set(branches.keys());
-    render();
-  });
-  document.getElementById("collapse-all").addEventListener("click", () => {
-    open = new Set([TREE.key]);
+  openAll.addEventListener("click", () => {
+    open = open.size > 1 ? new Set([TREE.key]) : new Set(branches.keys());
     render();
   });
 

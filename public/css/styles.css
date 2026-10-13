@@ -188,17 +188,17 @@ nav a:hover { color: var(--accent); }
   font: inherit;
 }
 .search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-.tree-actions { display: flex; gap: 0.5rem; }
-.tree-actions button {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
+.open-all {
+  margin-left: auto;
+  padding: 0.5rem 0.25rem;
+  border: 0;
+  background: none;
+  color: var(--accent);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   cursor: pointer;
 }
-.tree-actions button:hover { border-color: var(--accent); color: var(--accent); }
+.open-all:hover { text-decoration: underline; }
 .result-count { margin: 0; color: var(--muted); font-size: 0.95rem; }
 .empty { color: var(--muted); }
 
@@ -207,7 +207,7 @@ nav a:hover { color: var(--accent); }
 /* Family tree / directory switch */
 .view-switch {
   display: inline-flex;
-  margin-top: 1.5rem;
+  flex: none;
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 999px;

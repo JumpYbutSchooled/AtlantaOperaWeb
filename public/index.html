@@ -18,7 +18,7 @@
       <nav aria-label="Main">
         <a href="#about">About</a>
         <a href="#family-tree" data-show-view="tree">Family Tree</a>
-        <a href="#family-tree" data-show-view="directory">Directory</a>
+        <a href="#family-tree" data-show-view="directory">Everyone</a>
       </nav>
     </div>
   </header>
@@ -35,7 +35,7 @@
         </p>
         <div class="hero-actions">
           <a class="button" href="#family-tree" data-show-view="tree">Explore the family tree</a>
-          <a class="button button-quiet" href="#family-tree" data-show-view="directory">See everyone A–Z</a>
+          <a class="button button-quiet" href="#family-tree" data-show-view="directory">See everyone</a>
         </div>
       </div>
     </section>
@@ -156,33 +156,27 @@
     <section id="family-tree" class="people">
       <div class="wrap">
         <h2>The Family Tree</h2>
-        <p class="section-intro">
-          Open a branch to see who’s in it, or switch to the directory to see everyone at once.
-          Select anyone to read their profile.
-        </p>
-        <div class="view-switch" role="group" aria-label="View">
-          <button type="button" data-view="tree" aria-pressed="true">Family tree</button>
-          <button type="button" data-view="directory" aria-pressed="false">Directory A–Z</button>
-        </div>
+        <p class="section-intro" id="intro">Pick a group to see who’s in it, then pick a name to learn more.</p>
         <div class="controls">
-          <label class="search">
-            <span class="visually-hidden">Search by name or role</span>
-            <input id="search" type="search" placeholder="Search by name or role" autocomplete="off">
-          </label>
-          <div class="tree-actions" id="tree-actions">
-            <button type="button" id="expand-all">Expand all</button>
-            <button type="button" id="collapse-all">Collapse all</button>
+          <div class="view-switch" role="group" aria-label="How to show everyone">
+            <button type="button" data-view="tree" aria-pressed="true">Family tree</button>
+            <button type="button" data-view="directory" aria-pressed="false">Everyone</button>
           </div>
+          <label class="search">
+            <span class="visually-hidden">Find someone by name or instrument</span>
+            <input id="search" type="search" placeholder="Find someone" autocomplete="off">
+          </label>
           <p id="result-count" class="result-count" aria-live="polite"></p>
+          <button type="button" class="open-all" id="open-all">Open all</button>
         </div>
-        <div class="filters" id="filters" role="group" aria-label="Show department" hidden></div>
+        <div class="filters" id="filters" role="group" aria-label="Show a group" hidden></div>
       </div>
       <div class="tree-scroll" id="tree-scroll">
         <div id="tree" class="tree"></div>
       </div>
       <div class="wrap">
         <div id="directory" class="directory" hidden></div>
-        <p id="empty" class="empty" hidden>No one matches that search.</p>
+        <p id="empty" class="empty" hidden>No one found. Try another spelling.</p>
       </div>
     </section>
   </main>

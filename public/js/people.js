@@ -506,7 +506,7 @@ window.TREE = { label: "The Atlanta Opera", children: [
       { id: "james-zellers", role: "Personnel Manager" },
     ] },
   ] },
-  { label: "Chorus", photo: "images/chorus.jpg", note: ["Chorus members for Twilight of the Gods, Turandot, The Marriage of Figaro and La traviata. Open a singer to see which productions they sang in."], children: [
+  { label: "Chorus", photo: "images/chorus.jpg", note: ["Chorus members for Twilight of the Gods, Turandot, The Marriage of Figaro and La traviata. Each singer’s card lists the productions they sang in."], children: [
     { label: "Chorus Masters", children: [
       { id: "walter-huff", role: "Twilight of the Gods" },
       { id: "lisa-hasson", role: "Turandot, The Marriage of Figaro" },
