@@ -12,7 +12,9 @@ Names, photos and bios come from the People pages on atlantaopera.org.
 - `public/js/app.js`: draws the tree, the Everyone list and the profiles
 - `public/css/styles.css`: styles
 - `public/images/people/`: headshots
-- `public/season.html`, `public/education.html`, `public/get-involved.html`: placeholder pages, ready to fill in. Replace each "Coming soon" box with the real text. They're linked from the footer on every page.
+- `public/season.html`: every 2026-27 performance with ticket links, from atlantaopera.org. Past dates hide themselves (`public/js/season.js`), and the first show still to come is marked "Next up".
+- `public/education.html`, `public/get-involved.html`: placeholder pages, ready to fill in. Replace each "Coming soon" box with the real text.
+- `public/images/logo.png`, `logo-white.png`, `icon-*.png`: The Atlanta Opera's logo and icon, from atlantaopera.org. The site uses their font (Montserrat) and red.
 
 To add a photo, put it in `public/images/people/` and set `photo: "images/people/their-name.jpg"`. Anyone without a photo gets their initials.
 
