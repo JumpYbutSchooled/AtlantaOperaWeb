@@ -22,6 +22,18 @@
     if (now > new Date(`${el.dataset.until}T23:59:59`)) el.remove();
   });
 
+  // Show pages: performances that have happened drop off the list.
+  const dateList = document.querySelector(".date-list");
+  if (dateList) {
+    dateList.querySelectorAll("[data-at]").forEach((li) => {
+      if (new Date(li.dataset.at) < now) li.remove();
+    });
+    if (!dateList.children.length) {
+      dateList.hidden = true;
+      document.querySelector(".dates-done").hidden = false;
+    }
+  }
+
   const header = document.getElementById("site-header");
   const onScroll = () => header.classList.toggle("scrolled", scrollY > 8);
   addEventListener("scroll", onScroll, { passive: true });

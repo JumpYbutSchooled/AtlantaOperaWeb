@@ -13,6 +13,8 @@ Names, photos and bios come from the People pages on atlantaopera.org.
 - `public/css/styles.css`: styles
 - `public/images/people/`: headshots
 - `public/season.html`: every 2026-27 performance with ticket links, from atlantaopera.org. Past dates hide themselves (`public/js/season.js`), and the first show still to come is marked "Next up".
+- `public/shows/`: one page per show (story, dates, cast, creative team, content advisory). Cast and crew who are in the tree link to their profiles.
+- `public/guides/`: copies of the teacher guides and other PDFs, so nothing links out to atlantaopera.org. The only links back to the company are its ticket store (tickets.atlantaopera.org) and streaming site; everything else is an email address.
 - `public/education.html`: school performances, workshops, field trips and free online performances, with booking links and teacher guides.
 - `public/get-involved.html`: giving, the gala, volunteering, auditions and jobs. A listing with `data-until="YYYY-MM-DD"` hides itself after that date (`public/js/page.js`).
 - `public/images/logo.png`, `logo-white.png`, `icon-*.png`: The Atlanta Opera's logo and icon, from atlantaopera.org. The site uses their font (Montserrat) and red.
