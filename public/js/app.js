@@ -285,7 +285,7 @@
 
     let box;
     if (depth === 0) {
-      box = `<div class="node root-node"><img class="root-logo" src="images/logo-white.png" alt="${escape(node.label)}" width="266" height="106"><span class="root-sub">Founded 1979 · Atlanta, Georgia</span></div>`;
+      box = `<div class="node root-node"><img class="root-logo" src="images/logo-white.png?v=2" alt="${escape(node.label)}" width="722" height="290"><span class="root-sub">Founded 1979 · Atlanta, Georgia</span></div>`;
     } else {
       box = `<div class="node branch-node depth-${Math.min(depth, 3)}${isOpen ? " is-open" : ""}" data-key="${node.key}">
           <button type="button" class="branch-toggle" data-toggle="${node.key}" aria-expanded="${isOpen}">

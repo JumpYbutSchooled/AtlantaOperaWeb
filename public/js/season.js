@@ -15,4 +15,8 @@
   } else {
     document.getElementById("season-empty").hidden = false;
   }
+  // a show with no "Next up" and no series tag doesn't need the label row
+  document.querySelectorAll(".show-labels").forEach((p) => {
+    p.hidden = ![...p.children].some((c) => !c.hidden);
+  });
 })();
