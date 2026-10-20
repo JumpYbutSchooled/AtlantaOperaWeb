@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: "17 10 * * *" # about 6 am in Atlanta
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: Put the site live even if nothing changed (to check deploying works)
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -41,7 +46,7 @@ jobs:
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Put the site live
-        if: steps.save.outputs.changed == 'true'
+        if: steps.save.outputs.changed == 'true' || inputs.deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
