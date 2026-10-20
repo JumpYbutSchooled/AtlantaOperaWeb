@@ -1,0 +1,50 @@
+# Every morning: fetch the performances on tickets.atlantaopera.org, and if there's anything
+# new, save it (public/data/season.json) and put the site live so the Season page shows it.
+# Run it any time from the Actions tab with "Run workflow".
+name: Update season
+
+on:
+  schedule:
+    - cron: "17 10 * * *" # about 6 am in Atlanta
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: season
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: node scripts/update-season.mjs
+
+      - name: Save the new dates
+        id: save
+        run: |
+          if git diff --quiet -- public/data/season.json; then
+            echo "Nothing new."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/season.json
+          git commit -m "Season: latest dates from the ticket site"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Put the site live
+        if: steps.save.outputs.changed == 'true'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ATLANTAOPERAINFO }}
+          projectId: atlantaoperainfo
+          channelId: live
