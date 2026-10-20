@@ -79,9 +79,7 @@
     );
   }
 
-  // With just one top group (the Orchestra) it starts open, so its sections show straight away.
-  const startOpen = () => new Set([TREE.key, ...(depts.length === 1 ? [depts[0].key] : [])]);
-  let open = startOpen();
+  let open = new Set([TREE.key]);
   let query = "";
   let view = "tree"; // or "directory"
   let dept = "all";
@@ -105,7 +103,7 @@
     document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === view));
     scroller.hidden = !isTree;
     openAll.hidden = !isTree;
-    filtersEl.hidden = isTree || depts.length < 2; // "All" and one group would be the same list
+    filtersEl.hidden = isTree;
     dirEl.hidden = isTree;
     if (isTree) render();
     else renderDirectory();
@@ -215,7 +213,7 @@
   }
 
   function syncOpenAll() {
-    openAll.textContent = open.size > startOpen().size ? "Close all" : "Open all";
+    openAll.textContent = open.size > 1 ? "Close all" : "Open all";
   }
 
   function closeDown(node) {
@@ -619,7 +617,7 @@
   });
 
   openAll.addEventListener("click", () => {
-    open = open.size > startOpen().size ? startOpen() : new Set(branches.keys());
+    open = open.size > 1 ? new Set([TREE.key]) : new Set(branches.keys());
     render();
   });
 

@@ -23,6 +23,7 @@
   --tint-3: #ebe6ef;
   --tint-4: #e2ece6;
   --tint-5: #eeeeee;
+  --tint-6: #f1ebdd;
   color-scheme: light;
 }
 
@@ -49,6 +50,7 @@
     --tint-3: #2f2934;
     --tint-4: #23302a;
     --tint-5: #2c2c2c;
+    --tint-6: #322c21;
     color-scheme: dark;
   }
 }
@@ -73,6 +75,7 @@
   --tint-3: #2f2934;
   --tint-4: #23302a;
   --tint-5: #2c2c2c;
+  --tint-6: #322c21;
   color-scheme: dark;
 }
 
@@ -669,6 +672,7 @@ kbd {
 .initials.t3 { background: var(--tint-3); }
 .initials.t4 { background: var(--tint-4); }
 .initials.t5 { background: var(--tint-5); }
+.initials.t6 { background: var(--tint-6); }
 
 /* photos fade in once they've loaded */
 .js .avatar img,

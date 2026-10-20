@@ -73,94 +73,92 @@ He began playing drums in the third grade and studied privately with Jack Bell, 
 };
 
 window.TREE = { label: "The Atlanta Opera", children: [
-  { label: "Orchestra", photo: "images/orchestra.jpg", note: ["The skilled members of the orchestra share their tremendous talent with us in every production, it’s like music to our ears.", "Musicians employed are represented by the American Federation of Musicians of the United States and Canada."], children: [
-    { label: "Conductor", children: [
-      "ivan-lopez-reynoso",
+  { label: "Conductor", children: [
+    "ivan-lopez-reynoso",
+  ] },
+  { label: "Strings", children: [
+    { label: "Violin", children: [
+      { id: "peter-ciaschini", role: "The Loraine P. Williams Orchestra Concertmaster Chair" },
+      { id: "helen-kim", role: "Assistant Concertmaster" },
+      { id: "fia-durrett", role: "Principal Second Violin" },
+      { id: "adelaide-federici", role: "Assistant Principal Second Violin" },
+      "chelsea-cline",
+      "edward-eanes",
+      "virginia-fairchild",
+      "felix-farrar",
+      "sally-gardner-wilson",
+      "robert-givens",
+      "patti-gouvas",
+      "lisa-morrison",
+      "patrick-ryan",
+      "jessica-stinson",
+      "rafael-veytsblum",
     ] },
-    { label: "Strings", children: [
-      { label: "Violin", children: [
-        { id: "peter-ciaschini", role: "The Loraine P. Williams Orchestra Concertmaster Chair" },
-        { id: "helen-kim", role: "Assistant Concertmaster" },
-        { id: "fia-durrett", role: "Principal Second Violin" },
-        { id: "adelaide-federici", role: "Assistant Principal Second Violin" },
-        "chelsea-cline",
-        "edward-eanes",
-        "virginia-fairchild",
-        "felix-farrar",
-        "sally-gardner-wilson",
-        "robert-givens",
-        "patti-gouvas",
-        "lisa-morrison",
-        "patrick-ryan",
-        "jessica-stinson",
-        "rafael-veytsblum",
-      ] },
-      { label: "Viola", children: [
-        { id: "william-johnston", role: "Principal" },
-        { id: "catherine-allain", role: "Assistant Principal" },
-        "ryan-gregory",
-        "julie-rosseter",
-        "joli-wu",
-      ] },
-      { label: "Cello", children: [
-        { id: "charae-krueger", role: "Principal" },
-        { id: "barney-culver", role: "Assistant Principal" },
-        "david-hancock",
-        "cynthia-sulko",
-      ] },
-      { label: "Bass", children: [
-        { id: "daniel-tancredi", role: "Principal" },
-        "emory-clements",
-      ] },
+    { label: "Viola", children: [
+      { id: "william-johnston", role: "Principal" },
+      { id: "catherine-allain", role: "Assistant Principal" },
+      "ryan-gregory",
+      "julie-rosseter",
+      "joli-wu",
     ] },
-    { label: "Woodwinds", children: [
-      { label: "Flute", children: [
-        { id: "james-zellers", role: "Principal" },
-        "kelly-bryant",
-      ] },
-      { label: "Oboe", children: [
-        { id: "christina-gavin", role: "Principal" },
-        "dominic-bernard",
-      ] },
-      { label: "Clarinet", children: [
-        { id: "david-odom", role: "Principal" },
-        "john-warren",
-      ] },
-      { label: "Bassoon", children: [
-        { id: "marissa-takaki", role: "Principal" },
-        "debra-grove",
-      ] },
+    { label: "Cello", children: [
+      { id: "charae-krueger", role: "Principal" },
+      { id: "barney-culver", role: "Assistant Principal" },
+      "david-hancock",
+      "cynthia-sulko",
     ] },
-    { label: "Brass", children: [
-      { label: "Horn", children: [
-        { id: "david-bradley", role: "Principal" },
-        "jason-eklund",
-      ] },
-      { label: "Trumpet", children: [
-        { id: "yvonne-toll-schneider", role: "Principal" },
-        "alexander-freund",
-      ] },
-      { label: "Trombone", children: [
-        { id: "william-p-mann", role: "Principal" },
-        "richard-brady",
-      ] },
-      { label: "Tuba", children: [
-        { id: "donald-strand", role: "Principal" },
-      ] },
+    { label: "Bass", children: [
+      { id: "daniel-tancredi", role: "Principal" },
+      "emory-clements",
     ] },
-    { label: "Percussion & Harp", children: [
-      { label: "Timpani", children: [
-        { id: "john-lawless", role: "Principal" },
-      ] },
-      { label: "Percussion", children: [
-        { id: "mike-cebulski", role: "Principal" },
-      ] },
-      { label: "Harp", children: [
-        { id: "susan-brady", role: "Principal" },
-      ] },
+  ] },
+  { label: "Woodwinds", children: [
+    { label: "Flute", children: [
+      { id: "james-zellers", role: "Principal" },
+      "kelly-bryant",
     ] },
-    { label: "Personnel Manager", children: [
-      { id: "james-zellers", role: "Personnel Manager" },
+    { label: "Oboe", children: [
+      { id: "christina-gavin", role: "Principal" },
+      "dominic-bernard",
     ] },
+    { label: "Clarinet", children: [
+      { id: "david-odom", role: "Principal" },
+      "john-warren",
+    ] },
+    { label: "Bassoon", children: [
+      { id: "marissa-takaki", role: "Principal" },
+      "debra-grove",
+    ] },
+  ] },
+  { label: "Brass", children: [
+    { label: "Horn", children: [
+      { id: "david-bradley", role: "Principal" },
+      "jason-eklund",
+    ] },
+    { label: "Trumpet", children: [
+      { id: "yvonne-toll-schneider", role: "Principal" },
+      "alexander-freund",
+    ] },
+    { label: "Trombone", children: [
+      { id: "william-p-mann", role: "Principal" },
+      "richard-brady",
+    ] },
+    { label: "Tuba", children: [
+      { id: "donald-strand", role: "Principal" },
+    ] },
+  ] },
+  { label: "Percussion & Harp", children: [
+    { label: "Timpani", children: [
+      { id: "john-lawless", role: "Principal" },
+    ] },
+    { label: "Percussion", children: [
+      { id: "mike-cebulski", role: "Principal" },
+    ] },
+    { label: "Harp", children: [
+      { id: "susan-brady", role: "Principal" },
+    ] },
+  ] },
+  { label: "Personnel Manager", children: [
+    { id: "james-zellers", role: "Personnel Manager" },
   ] },
 ] };
