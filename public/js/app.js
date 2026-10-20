@@ -79,7 +79,9 @@
     );
   }
 
-  let open = new Set([TREE.key]);
+  // With just one top group (the Orchestra) it starts open, so its sections show straight away.
+  const startOpen = () => new Set([TREE.key, ...(depts.length === 1 ? [depts[0].key] : [])]);
+  let open = startOpen();
   let query = "";
   let view = "tree"; // or "directory"
   let dept = "all";
@@ -99,11 +101,11 @@
     const isTree = view === "tree";
     intro.textContent = isTree
       ? "Pick a group to see who’s in it, then pick a name to learn more."
-      : "Everyone in the company, sorted by last name. Pick a name to learn more.";
+      : "Everyone in the orchestra, sorted by last name. Pick a name to learn more.";
     document.querySelectorAll("[data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === view));
     scroller.hidden = !isTree;
     openAll.hidden = !isTree;
-    filtersEl.hidden = isTree;
+    filtersEl.hidden = isTree || depts.length < 2; // "All" and one group would be the same list
     dirEl.hidden = isTree;
     if (isTree) render();
     else renderDirectory();
@@ -213,7 +215,7 @@
   }
 
   function syncOpenAll() {
-    openAll.textContent = open.size > 1 ? "Close all" : "Open all";
+    openAll.textContent = open.size > startOpen().size ? "Close all" : "Open all";
   }
 
   function closeDown(node) {
@@ -617,7 +619,7 @@
   });
 
   openAll.addEventListener("click", () => {
-    open = open.size > 1 ? new Set([TREE.key]) : new Set(branches.keys());
+    open = open.size > startOpen().size ? startOpen() : new Set(branches.keys());
     render();
   });
 

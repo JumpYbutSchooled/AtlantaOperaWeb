@@ -1,13 +1,13 @@
 # Meet the People of The Atlanta Opera
 
-Who's who at The Atlanta Opera (leadership, orchestra, chorus and studio artists), shown as a tree or as one list.
+Who's who in The Atlanta Opera's orchestra, shown as a tree or as one list.
 Live at https://atlantaoperainfo.web.app
 
 Names, photos and bios come from the People pages on atlantaopera.org.
 
 ## Files
 
-- `public/index.html`: the page and the About text
+- `public/index.html`: the page, the About text, and the PayPal donate band. To switch the donate button on, give the `paypal-button` link an `href` with the PayPal donate link; the "Link coming soon" note then hides itself.
 - `public/js/people.js`: everyone's info (`PEOPLE`) and how the tree is laid out (`TREE`). The notes at the top of the file explain the fields.
 - `public/js/app.js`: draws the tree, the Everyone list and the profiles
 - `public/css/styles.css`: styles
